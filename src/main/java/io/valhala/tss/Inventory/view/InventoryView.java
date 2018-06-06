@@ -1,14 +1,13 @@
 package io.valhala.tss.Inventory.view;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.vaadin.ui.NumberField;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -20,8 +19,11 @@ import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.server.Page;
+import com.vaadin.server.Responsive;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
+import com.vaadin.server.UserError;
+import com.vaadin.shared.Position;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
@@ -31,15 +33,17 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.themes.ValoTheme;
 
 import io.valhala.tss.Inventory.backend.InventoryItem;
 import io.valhala.tss.Inventory.backend.ItemRepository;
 
-
+@SuppressWarnings("unchecked")
 @SpringView(name = InventoryView.VIEW_NAME)
 @SpringComponent
 public class InventoryView extends HorizontalLayout implements View {
@@ -58,10 +62,12 @@ public class InventoryView extends HorizontalLayout implements View {
 	private editPanel editForm = new editPanel();
 	private Label preview;
 	private String qrBuilder;
+	private boolean searchByName = true;
 
 	public InventoryView() {
 		setResponsive(true);
 		setSizeFull();
+		Responsive.makeResponsive(this);
 		initComponents();
 	}
 
@@ -70,10 +76,12 @@ public class InventoryView extends HorizontalLayout implements View {
 		filterMode = new ComboBox();
 		filterMode.setItems("Filter by Barcode", "Filter by Name");
 		filterMode.setValue("Filter by Name");
+		filterMode.setEmptySelectionAllowed(false);
 		
 		filter = new TextField();
 		filter.setWidth("100%");
-		filter.setPlaceholder("Search for items");
+		filter.setPlaceholder("TextField");
+		filter.setMaxLength(20);
 
 		barField = new TextField("Barcode");
 		barField.setDescription("Barcode will be generated");
@@ -117,32 +125,49 @@ public class InventoryView extends HorizontalLayout implements View {
 	}
 
 	private void initPreferences() {
+		
 		editForm.setVisible(false);
+		
 		toolBar.setWidth("100%");
-		filter.setWidth("100%");
 		toolBar.setExpandRatio(filter, 1);
+		
 		left.setSizeFull();
 		left.setExpandRatio(iList, 1);
+		
 		iList.setColumns("itemName", "itemType", "itemCode", "itemQuantity");
 		iList.setSizeFull();
 		iList.setSelectionMode(Grid.SelectionMode.SINGLE);
+		
 		addItem.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		
 		winSplit.setSpacing(true);
+		
 		winLeft.setSpacing(true);
+		
 		barWindow.setResponsive(true);
 		barWindow.setWidth("500px");
 		barWindow.setHeight("500px");
 		barWindow.setModal(true);
 		barWindow.center();
 		barWindow.setResizable(false);
+		
 		preview.setWidth("100px");
 		preview.setHeight("100px");
 
 		initListeners();
 	}
 
+
 	private void initListeners() {
 
+		filterMode.addValueChangeListener(e -> {
+			if(filterMode.getValue().equals("Filter by Barcode")) {
+				searchByName = false;
+			}
+			else {
+				searchByName = true;
+			}
+		});
 		
 		filter.addValueChangeListener(e -> {
 			if(e.getValue().equals("")) {
@@ -201,10 +226,26 @@ public class InventoryView extends HorizontalLayout implements View {
 			}
 		});
 	}
-	
+		
 	private void refresh() 
 	{
-		iList.setItems(repo.findAllByItemNameContainsIgnoreCase(filter.getValue()));
+
+		if(!searchByName) {
+			if(filter.getErrorMessage() != null && filter.getValue().matches("[^(A-Z)^(a-z)]+")) {
+				filter.setComponentError(null);
+			}
+			if(filter.getValue().matches("([0-9])+")) { 
+				//save the value to a variable.. but its need to be a long
+			}
+			else {
+				filter.setComponentError(new UserError("Entry must be numeric. Alternatively you can swap filter modes."));
+			}
+			//Long.parseLong(Long.valueOf(temp)); ?
+			//iList.setItems(repo.findAllByItemCodeContains(Long.valueOf(temp)));	
+		}
+		else {
+			iList.setItems(repo.findAllByItemNameContainsIgnoreCase(filter.getValue()));
+		}
 	}
 
 	private void makePreview() {
@@ -247,6 +288,7 @@ public class InventoryView extends HorizontalLayout implements View {
 			initEditConf();
 			initEditLayout();
 			setSizeUndefined();
+			Responsive.makeResponsive(this);
 			binder.bindInstanceFields(this);
 			
 		}

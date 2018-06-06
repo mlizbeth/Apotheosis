@@ -31,6 +31,8 @@ public class InventoryItem implements Serializable, Cloneable {
 	
 	public InventoryItem() {}
 	
+	public InventoryItem(long itemCode) {this.itemCode = itemCode;}
+	
 	public InventoryItem(String itemName, String itemType, long itemCode, int itemQuantity)
 	{
 		this.itemName = itemName;
