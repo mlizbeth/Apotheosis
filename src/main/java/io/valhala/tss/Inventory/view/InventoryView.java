@@ -7,7 +7,6 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.ui.NumberField;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
