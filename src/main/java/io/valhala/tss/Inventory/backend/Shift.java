@@ -1,36 +1,39 @@
 package io.valhala.tss.Inventory.backend;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
+import com.vaadin.v7.ui.components.calendar.event.BasicEvent;
 
-import org.vaadin.addon.calendar.item.BasicItem;
-
-public class Shift extends BasicItem {
+public class Shift extends BasicEvent {
 	
 	enum State {
 		scheduled, approved, isDropping
 	}
 	
-	private ZonedDateTime start, end;
-	private String name;
-	private String details;
+	private Date start, end;
+	private String name, position;
 	
-	public Shift() {
-		
+	public Shift(Date start, Date end, String name, String position) {
+		this.start = start;
+		this.end = end;
+		this.name = name;
+		this.position = position;
 	}
+	
+	public Shift() {}
 
-	public ZonedDateTime getStart() {
+	public Date getStart() {
 		return start;
 	}
 
-	public void setStart(ZonedDateTime start) {
+	public void setStart(Date start) {
 		this.start = start;
 	}
 
-	public ZonedDateTime getEnd() {
+	public Date getEnd() {
 		return end;
 	}
 
-	public void setEnd(ZonedDateTime end) {
+	public void setEnd(Date end) {
 		this.end = end;
 	}
 
@@ -42,12 +45,12 @@ public class Shift extends BasicItem {
 		this.name = name;
 	}
 
-	public String getDetails() {
-		return details;
+	public String getPosition() {
+		return position;
 	}
 
-	public void setDetails(String details) {
-		this.details = details;
+	public void setPosition(String position) {
+		this.position = position;
 	}
 
 

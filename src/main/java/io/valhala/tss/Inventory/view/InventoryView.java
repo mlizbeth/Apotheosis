@@ -350,8 +350,8 @@ public class InventoryView extends HorizontalLayout implements View {
 			//else {
 				//repo.save(item);
 			//}	
-			//repo.save(item); //need to automagically refresh the grid
-			//Page.getCurrent().reload();
+			repo.save(item); //need to automagically refresh the grid
+			Page.getCurrent().reload();
 			//Validate input
 		}
 

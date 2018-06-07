@@ -4,7 +4,6 @@ import java.text.DateFormatSymbols;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-
 import com.vaadin.data.Binder;
 import com.vaadin.data.ValidationException;
 import com.vaadin.navigator.View;
@@ -45,15 +44,14 @@ import com.vaadin.v7.ui.components.calendar.event.CalendarEvent;
 import com.vaadin.v7.ui.components.calendar.handler.BasicDateClickHandler;
 import com.vaadin.v7.ui.components.calendar.handler.BasicWeekClickHandler;
 import com.vaadin.v7.ui.components.calendar.CalendarComponentEvents.EventClickHandler;
-import io.valhala.tss.Inventory.backend.Appointment;
+import io.valhala.tss.Inventory.backend.Shift;
 
 
 
-@SpringView(name = S2.VIEW_NAME)
+@SpringView(name = ScheduleView.VIEW_NAME)
 @SpringComponent
 @SuppressWarnings("deprecation")
-public class S2 extends GridLayout implements View
-{
+public class ScheduleView extends GridLayout implements View {
 	private enum Mode {
 		MONTH, WEEK, DAY;
 	}
@@ -78,8 +76,7 @@ public class S2 extends GridLayout implements View
 	private DateField startDateField, endDateField;
 	private Binder<CalendarEvent> scheduledEventBinder = new Binder<>();
 	
-	public S2()
-	{
+	public ScheduleView() {
 		setSizeFull();
 		setMargin(true);
 		setSpacing(true);
@@ -89,56 +86,61 @@ public class S2 extends GridLayout implements View
 		init();
 	}
 
-	private void init() 
-	{
+	private void init() {
 		setLocale(Locale.getDefault());
 		initCalendar();
 		initLayout();
 		addInitialEvents();
 	}
 
-	private void addInitialEvents() 
-	{
+	private void addInitialEvents() {
     	Date start = internalCalendar.getTime();
         Date end = (Date) start.clone();
         
-        start.setHours(16);
+        start.setHours(8);
         start.setMinutes(0);
         
         end.setHours(17);
         end.setMinutes(0);
+        
+        Shift test3 = new Shift(start,end,"Dalton","TSS-AV");
+        Shift test4 = new Shift(start,end,"Connie", "RCC");
+        Shift test5 = new Shift(start,end,"Ray","TSS-David?");
+        Shift test6 = new Shift(start,end,"Some Dude", "TSS-Larry?");
+        
+        test3.setCaption(test3.getName());
+        test3.setDescription(test3.getPosition());
+        test3.setStyleName("color1");
+        
+        test4.setCaption(test4.getName());
+        test4.setDescription(test4.getPosition());
+        test4.setStyleName("color2");
+        
+        test5.setCaption(test5.getName());
+        test5.setDescription(test5.getPosition());
+        test5.setStyleName("color3");
 
-        Appointment test = new Appointment();
-        Appointment test2 = new Appointment();
-        test.setCaption("Marvin");
-        test.setStart(start);
-        test.setEnd(end);
-        test.setStyleName("color1");
-        test.setDescription("this color shows clients booked by A");
-        dataSource.addEvent(test);
-        test2.setCaption("Bill");
-        test2.setStart(start);
-        test2.setEnd(end);
-        test2.setStyleName("color2");
-        test2.setDescription("this colors shows clients booked by L");
-        dataSource.addEvent(test2);
-		
+        test6.setCaption(test6.getName());
+        test6.setDescription(test6.getPosition());
+        test6.setStyleName("color4");
+       
+        dataSource.addEvent(test3);
+        dataSource.addEvent(test4);
+        dataSource.addEvent(test5);
+        dataSource.addEvent(test6);
 	}
 
-	private ComboBox createCalendarFormatSelect() 
-	{
+	private ComboBox createCalendarFormatSelect() {
 		ComboBox temp = new ComboBox("Calendar Format");
 		return temp;
 	}
 
-	private ComboBox createTimeZoneSelect() 
-	{
+	private ComboBox createTimeZoneSelect() {
 		ComboBox temp = new ComboBox("Timezone");
 		return temp;
 	}
 
-	private ComboBox createLocaleSelect() 
-	{
+	private ComboBox createLocaleSelect() {
 		ComboBox temp = new ComboBox("Locale");
 		return temp;
 	}
@@ -148,37 +150,24 @@ public class S2 extends GridLayout implements View
         return cb;
     }
 
-	private void initCalendar() 
-	{
+	private void initCalendar() {
 		dataSource = new BasicEventProvider();
 		calendar = new Calendar(dataSource);
 		calendar.setLocale(getLocale());
 		calendar.setImmediate(true);
 		
-		if(calendarWidth != null || calendarHeight != null)
-		{
-			if(calendarHeight != null) 
-			{
-				calendar.setHeight(calendarHeight);
-			}
-			if(calendarWidth != null)
-			{
-				calendar.setWidth(calendarWidth);
-			}
-			else
-			{
-				calendar.setSizeFull();
-			}
+		if(calendarWidth != null || calendarHeight != null) {
+			if(calendarHeight != null) {calendar.setHeight(calendarHeight);}
+			if(calendarWidth != null) {calendar.setWidth(calendarWidth);}
+			else {calendar.setSizeFull();}
 		}
 		
-		if(firstHour != null && lastHour != null)
-		{
+		if(firstHour != null && lastHour != null) {
 			calendar.setFirstVisibleHourOfDay(firstHour);
 			calendar.setLastVisibleHourOfDay(lastHour);
 		}
 		
-		if(firstDay != null && lastDay != null)
-		{
+		if(firstDay != null && lastDay != null) {
 			calendar.setFirstDayOfWeek(firstDay);
 			calendar.setLastVisibleDayOfWeek(lastDay);
 		}
@@ -203,17 +192,13 @@ public class S2 extends GridLayout implements View
 		addEventListeners();
 	}
 
-
-
-	private void updateCaptionLabel() 
-	{
+	private void updateCaptionLabel() {
 		 DateFormatSymbols s = new DateFormatSymbols(getLocale());
 	     String month = s.getShortMonths()[internalCalendar.get(GregorianCalendar.MONTH)];
 	     captionLabel.setValue(month + " " + internalCalendar.get(GregorianCalendar.YEAR));
 	}
 
-	private void addEventListeners() 
-	{
+	private void addEventListeners() {
 		
 		calendar.setHandler(new EventClickHandler() {
 
@@ -223,35 +208,29 @@ public class S2 extends GridLayout implements View
 			}
 		});
 		
-		calendar.setHandler(new BasicWeekClickHandler() 
-		{
+		calendar.setHandler(new BasicWeekClickHandler() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void weekClick(WeekClick event)
-			{
+			public void weekClick(WeekClick event) {
 				super.weekClick(event);
 				updateCaptionLabel();
 				switchToWeekView();
 			}
 		});
 		
-		calendar.setHandler(new BasicDateClickHandler() 
-		{
+		calendar.setHandler(new BasicDateClickHandler() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void dateClick(DateClickEvent event)
-			{
+			public void dateClick(DateClickEvent event) {
 				super.dateClick(event);
 				switchToDayView();
 			}
 		});
-		
 	}
 
-	private void initLayout() 
-	{
+	private void initLayout() {
 		initNavigationButtons();
 		initHideWeekendButton();
 		initReadOnlyButton();
@@ -312,12 +291,10 @@ public class S2 extends GridLayout implements View
 		 * if the window is too small, the calendar no longer
 		 * displays the line showing current time of day */
 		calendar.setSizeFull(); 
-		setRowExpandRatio(getRows() - 1, 1.0f);
-		
+		setRowExpandRatio(getRows() - 1, 1.0f);	
 	}
 
-	private void initAddEventButton() 
-	{
+	private void initAddEventButton() {
 		addNewEvent = new Button("Add Event");
 		addNewEvent.addStyleName("primary");
         addNewEvent.addStyleName(ValoTheme.BUTTON_SMALL);
@@ -339,43 +316,29 @@ public class S2 extends GridLayout implements View
         });
 	}
 	
-	private void showEventPopup(CalendarEvent event, boolean newEvent)
-	{
+	private void showEventPopup(CalendarEvent event, boolean newEvent) {
 		if(event == null) {return;}
 		
 		updateCalendarEventPopup(newEvent);
 		updateCalendarEventForm(event);
 		captionField.focus();
 		
-		if(!getUI().getWindows().contains(scheduleEventPopup))
-		{
+		if(!getUI().getWindows().contains(scheduleEventPopup)) {
 			getUI().addWindow(scheduleEventPopup);
 		}
 	}
 	
-	private void updateCalendarEventPopup(boolean newEvent)
-	{
-		if(scheduleEventPopup == null)
-		{
-			createCalendarEventPopup();
-		}
-		
-		if(newEvent)
-		{
-			scheduleEventPopup.setCaption("New event");
-		}
-		else
-		{
-			scheduleEventPopup.setCaption("Edit event");
-		}
+	private void updateCalendarEventPopup(boolean newEvent) {
+		if(scheduleEventPopup == null) {createCalendarEventPopup();}
+		if(newEvent) {scheduleEventPopup.setCaption("New event");}
+		else {scheduleEventPopup.setCaption("Edit event");}
 		
 		deleteEventButton.setVisible(!newEvent);
 		deleteEventButton.setEnabled(!calendar.isReadOnly());
 		applyEventButton.setEnabled(!calendar.isReadOnly());
 	}
 	
-	 private void updateCalendarEventForm(CalendarEvent event) 
-	 {
+	 private void updateCalendarEventForm(CalendarEvent event) {
 		 BeanItem<CalendarEvent> item = new BeanItem<>(event);
 	     scheduleEventFieldLayout.removeAllComponents();
 	     scheduleEventFieldGroup = new FieldGroup();
@@ -386,11 +349,10 @@ public class S2 extends GridLayout implements View
 	  }
 	 
 	 
-	 private void initFormFields(Layout formLayout, Class<? extends CalendarEvent> eventClass)
-	 {
+	 private void initFormFields(Layout formLayout, Class<? extends CalendarEvent> eventClass) {
 		 	startDateField = createDateField("Start date");
 	        endDateField = createDateField("End date");
-
+	        /* probably dont need this component */
 	        final CheckBox allDayField = createCheckBox("All-day");
 	        allDayField.addValueChangeListener(event -> {
 	            if (event.getValue()) {
@@ -415,6 +377,7 @@ public class S2 extends GridLayout implements View
 	        styleNameField.setTextInputAllowed(false);
 
 	        formLayout.addComponent(startDateField);
+	        endDateField.setRequired(true);
 	        startDateField.setRequired(true);
 	        formLayout.addComponent(endDateField);
 	        formLayout.addComponent(allDayField);
@@ -436,60 +399,50 @@ public class S2 extends GridLayout implements View
 	        scheduleEventFieldGroup.bind(styleNameField, "styleName");
 	        scheduledEventBinder.bind(allDayField, CalendarEvent::isAllDay, null);
 	 }
-	 
+	
 	    private ComboBox createStyleNameComboBox() {
-	        ComboBox s = new ComboBox("Calendar");
+	        ComboBox s = new ComboBox("Area");
+	        s.setRequired(true);
 	        s.addContainerProperty("c", String.class, "");
 	        s.setItemCaptionPropertyId("c");
 	        Item i = s.addItem("color1");
-	        i.getItemProperty("c").setValue("Work");
+	        i.getItemProperty("c").setValue("TSS-AV");
 	        i = s.addItem("color2");
-	        i.getItemProperty("c").setValue("Personal");
+	        i.getItemProperty("c").setValue("RCC");
 	        i = s.addItem("color3");
-	        i.getItemProperty("c").setValue("Family");
+	        i.getItemProperty("c").setValue("TSS-Larry");
 	        i = s.addItem("color4");
-	        i.getItemProperty("c").setValue("Hobbies");
+	        i.getItemProperty("c").setValue("TSS-David");
 	        return s;
 	    }
 	 
-	    private TextArea createTextArea(String caption)
-	    {
+	    private TextArea createTextArea(String caption) {
 	        TextArea f = new TextArea(caption);
 	        f.setNullRepresentation("");
 	        return f;
 	    }
 	 
-	    private TextField createTextField(String caption) 
-	    {
+	    private TextField createTextField(String caption) {
 	        TextField f = new TextField(caption);
 	        f.setNullRepresentation("");
 	        return f;
 	    }
 	 
-	    private void setFormDateResolution(Resolution resolution)
-	    {
-	        if (startDateField != null && endDateField != null) 
-	        {
+	    private void setFormDateResolution(Resolution resolution) {
+	        if (startDateField != null && endDateField != null) {
 	            startDateField.setResolution(resolution);
 	            endDateField.setResolution(resolution);
 	        }
 	    }
 	    
-	    private DateField createDateField(String caption) 
-	    {
+	    private DateField createDateField(String caption) {
 	        DateField f = new DateField(caption);
-	        if (useSecondResolution) 
-	        {
-	            f.setResolution(Resolution.SECOND);
-	        } else 
-	        {
-	            f.setResolution(Resolution.MINUTE);
-	        }
+	        if (useSecondResolution) {f.setResolution(Resolution.SECOND);} 
+	        else {f.setResolution(Resolution.MINUTE);}
 	        return f;
 	    }
 	
-	private void createCalendarEventPopup()
-	{
+	private void createCalendarEventPopup() {
 		VerticalLayout layout = new VerticalLayout();
 		//layout.setMargin(true);
 		layout.setSpacing(true);
@@ -599,8 +552,7 @@ public class S2 extends GridLayout implements View
 	    }
 	
 	//Default implementation
-	private CalendarEvent createNewEvent(Date startDate, Date endDate)
-	{
+	private CalendarEvent createNewEvent(Date startDate, Date endDate) {
 		BasicEvent event = new BasicEvent();
 		event.setCaption("");
 		event.setStart(startDate);
@@ -609,46 +561,29 @@ public class S2 extends GridLayout implements View
 		return event;
 	}
 
-	private void initDisabledButton() 
-	{
-		disabled = new CheckBox("Disabled");
-	}
+	private void initDisabledButton() {disabled = new CheckBox("Disabled");}
 
-	private void initReadOnlyButton() 
-	{
-		readOnly = new CheckBox("Read-Only");
-	}
+	private void initReadOnlyButton() {readOnly = new CheckBox("Read-Only");}
 
-	private void initHideWeekendButton() 
-	{
-		hideWeekends = new CheckBox("Hide Weekends");
-	}
+	private void initHideWeekendButton() {hideWeekends = new CheckBox("Hide Weekends");}
 
-	private void initNavigationButtons()
-	{
+	private void initNavigationButtons() {
 		//monthButton = new Button("Month", e -> switchToMonthView());
-		monthButton = new Button("Month", new ClickListener() 
-		{
+		monthButton = new Button("Month", new ClickListener() {
 
 			@Override
-			public void buttonClick(ClickEvent event) 
-			{
+			public void buttonClick(ClickEvent event) {
 				if(!prevButton.isVisible() && !nextButton.isVisible()) {
 					prevButton.setVisible(true);
 					nextButton.setVisible(true);
 				}
 				switchToMonthView();
-				
 			}
-		
 		});
 		//weekButton = new Button("Week", e -> switchToWeekView());
-		weekButton = new Button("Week", new ClickListener()
-		{
-
+		weekButton = new Button("Week", new ClickListener() {
 			@Override
-			public void buttonClick(ClickEvent event) 
-			{
+			public void buttonClick(ClickEvent event) {
 				if(prevButton.isVisible() && nextButton.isVisible()) {
 					prevButton.setVisible(false);
 					nextButton.setVisible(false);
@@ -656,73 +591,43 @@ public class S2 extends GridLayout implements View
 				WeekClickHandler handler = (WeekClickHandler) calendar.getHandler(WeekClick.EVENT_ID);
 				handler.weekClick(new WeekClick(calendar, internalCalendar.get(GregorianCalendar.WEEK_OF_YEAR), internalCalendar.get(GregorianCalendar.YEAR)));
 			}
-			
 		});
 		//dayButton = new Button("Day", e -> switchToDayView());
-		dayButton = new Button("Day", new ClickListener() 
-		{
-
+		dayButton = new Button("Day", new ClickListener() {
 			@Override
-			public void buttonClick(ClickEvent event) 
-			{
+			public void buttonClick(ClickEvent event) {
 				if(prevButton.isVisible() && nextButton.isVisible()) {
 					prevButton.setVisible(false);
 					nextButton.setVisible(false);
 				}
 				BasicDateClickHandler handler = (BasicDateClickHandler) calendar.getHandler(DateClickEvent.EVENT_ID);
 				handler.dateClick(new DateClickEvent(calendar, internalCalendar.getTime()));
-				
-				
 			}
-			
 		});
 		nextButton = new Button("Next", e -> handleNavClick(e));
 		prevButton = new Button("Prev", e -> handleNavClick(e));
-		
 	}
 
 	/* test code to see if we can implement all nav features in one method */
-	private void handleNavClick(ClickEvent e)
-	{
-		switch(viewMode)
-		{
+	private void handleNavClick(ClickEvent e) {
+		switch(viewMode) {
 		case MONTH:
-			if(e.getButton() == nextButton)
-			{
-				roll(Mode.MONTH, 1);
-			}
-			else
-			{
-				roll(Mode.MONTH, -1);
-			}
+			if(e.getButton() == nextButton) {roll(Mode.MONTH, 1);}
+			else {roll(Mode.MONTH, -1);}
 			break;
-		case WEEK:
-			if(e.getButton() == nextButton)
-			{
-				roll(Mode.WEEK, 1);
-			}
-			else
-			{
-				roll(Mode.WEEK, -1);
-			}
+		case WEEK: 
+			if(e.getButton() == nextButton) {roll(Mode.WEEK, 1);}
+			else {roll(Mode.WEEK, -1);}
 			break;
 		case DAY:
-			if(e.getButton() == nextButton)
-			{
-				roll(Mode.DAY, 1);
-			}
-			else
-			{
-				roll(Mode.DAY, -1);
-			}
+			if(e.getButton() == nextButton) {roll(Mode.DAY, 1);}
+			else {roll(Mode.DAY, -1);}
 			break;
 		}
 	}
 	
-	private void roll(Mode viewMode, int direction)
-	{
-		if(viewMode == Mode.MONTH)
-		{
+	private void roll(Mode viewMode, int direction) {
+		if(viewMode == Mode.MONTH) {
 			System.out.println("month if");
 			internalCalendar.setTime(currentMonthFirstDate);
 			internalCalendar.add(GregorianCalendar.MONTH, direction);
@@ -734,11 +639,9 @@ public class S2 extends GridLayout implements View
 			
 			internalCalendar.add(GregorianCalendar.MONTH, 1);
 			internalCalendar.add(GregorianCalendar.DATE, -1);
-			resetCalendarTime(true);
-			
+			resetCalendarTime(true);	
 		}
-		if(viewMode == Mode.WEEK)
-		{
+		if(viewMode == Mode.WEEK) {
 			System.out.println("week if");
 			internalCalendar.add(GregorianCalendar.WEEK_OF_YEAR, direction);
 			internalCalendar.add(GregorianCalendar.DAY_OF_WEEK, internalCalendar.getFirstDayOfWeek());
@@ -747,8 +650,7 @@ public class S2 extends GridLayout implements View
 			internalCalendar.add(GregorianCalendar.DATE, 6);
 			calendar.setEndDate(internalCalendar.getTime());
 		}
-		if(viewMode == Mode.DAY)
-		{
+		if(viewMode == Mode.DAY) {
 			System.out.println("day if");
 			internalCalendar.add(GregorianCalendar.DATE, direction);
 			resetCalendarTime(false);
@@ -758,24 +660,17 @@ public class S2 extends GridLayout implements View
 	
 	/* why do we need these 2 reset methods?*/ //first is calendar component
 	//maybe change to updateCalendarTime and restCalendarTime
-	private void resetCalendarTime(boolean x)
-	{
+	private void resetCalendarTime(boolean x) {
 		resetInternalTime(x);
-		if(x)
-		{
-			calendar.setEndDate(internalCalendar.getTime());
-		}
-		else
-		{
+		if(x) {calendar.setEndDate(internalCalendar.getTime());}
+		else {
 			calendar.setStartDate(internalCalendar.getTime());
 			updateCaptionLabel();
 		}
 	}
 	
-	private void resetInternalTime(boolean x)
-	{
-		if(x)
-		{
+	private void resetInternalTime(boolean x) {
+		if(x) {
 			internalCalendar.set(GregorianCalendar.HOUR_OF_DAY, internalCalendar.getMaximum(GregorianCalendar.HOUR_OF_DAY));
             internalCalendar.set(GregorianCalendar.MINUTE,
                     internalCalendar.getMaximum(GregorianCalendar.MINUTE));
@@ -789,15 +684,13 @@ public class S2 extends GridLayout implements View
             internalCalendar.set(GregorianCalendar.SECOND, 0);
             internalCalendar.set(GregorianCalendar.MILLISECOND, 0);
         }
-		
 	}
 
 	private void switchToDayView() {viewMode = Mode.DAY;}
 
 	private void switchToWeekView() {viewMode = Mode.WEEK;}
 
-	private void switchToMonthView() 
-	{
+	private void switchToMonthView() {
 		viewMode = Mode.MONTH;
 		int rollAmount = internalCalendar.get(GregorianCalendar.DAY_OF_MONTH) -1;
 		internalCalendar.add(GregorianCalendar.DAY_OF_MONTH, -rollAmount);
@@ -809,10 +702,7 @@ public class S2 extends GridLayout implements View
 		internalCalendar.setTime(getToday());
 	}
 
-	private Date getToday() 
-	{
-		return new Date();
-	}
+	private Date getToday() {return new Date();}
 	
 	//default implementation - to change
     private static Date getEndOfDay(java.util.Calendar calendar, Date date) {
@@ -835,8 +725,7 @@ public class S2 extends GridLayout implements View
     }
 	
 	//default implementation - to change
-    private static Date getStartOfDay(java.util.Calendar calendar, Date date) 
-    {
+    private static Date getStartOfDay(java.util.Calendar calendar, Date date) {
         java.util.Calendar calendarClone = (java.util.Calendar) calendar.clone();
 
         calendarClone.setTime(date);
@@ -848,5 +737,4 @@ public class S2 extends GridLayout implements View
 
         return calendarClone.getTime();
     }
-	
 }
