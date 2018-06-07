@@ -348,7 +348,7 @@ public class InventoryView extends HorizontalLayout implements View {
 			//	Notification.show("Check your input. Item Name and Type must not be only numbers and Quantity/Code must not be only letters");
 			//}
 			//else {
-				repo.save(item);
+				//repo.save(item);
 			//}	
 			//repo.save(item); //need to automagically refresh the grid
 			//Page.getCurrent().reload();

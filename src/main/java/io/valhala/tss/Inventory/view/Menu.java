@@ -70,7 +70,7 @@ public class Menu extends CssLayout
 		
 		createNavigationButton("Home", DashboardView.VIEW_NAME, VaadinIcons.HOME);
 		createNavigationButton("Inventory", InventoryView.VIEW_NAME, VaadinIcons.PACKAGE);
-		createNavigationButton("Schedule", ScheduleView.VIEW_NAME, VaadinIcons.CALENDAR_O);
+		createNavigationButton("Schedule", S2.VIEW_NAME, VaadinIcons.CALENDAR_O);
 		createNavigationButton("Timeclock", "Time Clock", VaadinIcons.CALENDAR_CLOCK);
 		createNavigationButton("Task List", "Task List", VaadinIcons.NOTEBOOK);
 		
