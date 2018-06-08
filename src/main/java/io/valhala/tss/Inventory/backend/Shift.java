@@ -1,15 +1,24 @@
 package io.valhala.tss.Inventory.backend;
 
+import java.io.Serializable;
 import java.util.Date;
-import com.vaadin.v7.ui.components.calendar.event.BasicEvent;
 
-public class Shift extends BasicEvent {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import com.vaadin.v7.ui.components.calendar.event.BasicEvent;
+@Table(name="shift")
+@Entity
+public class Shift extends BasicEvent implements Serializable, Cloneable {
 	
-	enum State {
+	/*enum State {
 		scheduled, approved, isDropping
-	}
-	
+	}*/
+	@NotNull
 	private Date start, end;
+	@NotNull
 	private String name, position;
 	
 	public Shift(Date start, Date end, String name, String position) {
@@ -20,7 +29,8 @@ public class Shift extends BasicEvent {
 	}
 	
 	public Shift() {}
-
+	
+	@Column(name="shift_start")
 	public Date getStart() {
 		return start;
 	}
@@ -28,7 +38,8 @@ public class Shift extends BasicEvent {
 	public void setStart(Date start) {
 		this.start = start;
 	}
-
+	
+	@Column(name="shift_end")
 	public Date getEnd() {
 		return end;
 	}
@@ -37,6 +48,7 @@ public class Shift extends BasicEvent {
 		this.end = end;
 	}
 
+	@Column(name="employee")
 	public String getName() {
 		return name;
 	}
@@ -44,7 +56,8 @@ public class Shift extends BasicEvent {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
+	@Column(name="area")
 	public String getPosition() {
 		return position;
 	}

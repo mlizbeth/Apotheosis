@@ -4,6 +4,11 @@ import java.text.DateFormatSymbols;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.vaadin.data.Binder;
 import com.vaadin.data.ValidationException;
 import com.vaadin.navigator.View;
@@ -45,6 +50,7 @@ import com.vaadin.v7.ui.components.calendar.handler.BasicDateClickHandler;
 import com.vaadin.v7.ui.components.calendar.handler.BasicWeekClickHandler;
 import com.vaadin.v7.ui.components.calendar.CalendarComponentEvents.EventClickHandler;
 import io.valhala.tss.Inventory.backend.Shift;
+import io.valhala.tss.Inventory.backend.ShiftRepository;
 
 
 
@@ -55,6 +61,10 @@ public class ScheduleView extends GridLayout implements View {
 	private enum Mode {
 		MONTH, WEEK, DAY;
 	}
+	
+	@Autowired
+	ShiftRepository repo;
+	
 	public static final String VIEW_NAME = "S2";
 	private GregorianCalendar internalCalendar;
 	private Calendar calendar;
@@ -75,6 +85,7 @@ public class ScheduleView extends GridLayout implements View {
 	private boolean showWeeklyView, useSecondResolution;
 	private DateField startDateField, endDateField;
 	private Binder<CalendarEvent> scheduledEventBinder = new Binder<>();
+	//private Shift mot = new Shift(getToday(), getToday(), "Maddie", "RCC");
 	
 	public ScheduleView() {
 		setSizeFull();
@@ -83,10 +94,15 @@ public class ScheduleView extends GridLayout implements View {
 		Responsive.makeResponsive(this);
 		firstHour = 9;
 		lastHour = 20;
-		init();
+		init1();
+	}
+	
+	@PostConstruct
+	void init() {
+		//repo.save(mot); no identifier specified!
 	}
 
-	private void init() {
+	private void init1() {
 		setLocale(Locale.getDefault());
 		initCalendar();
 		initLayout();
@@ -350,37 +366,37 @@ public class ScheduleView extends GridLayout implements View {
 	 
 	 
 	 private void initFormFields(Layout formLayout, Class<? extends CalendarEvent> eventClass) {
-		 	startDateField = createDateField("Start date");
-	        endDateField = createDateField("End date");
+		 	startDateField = createDateField("Shift starts");
+	        endDateField = createDateField("Shift ends");
 	        /* probably dont need this component */
-	        final CheckBox allDayField = createCheckBox("All-day");
-	        allDayField.addValueChangeListener(event -> {
+	       // final CheckBox allDayField = createCheckBox("All-day");
+	       /* allDayField.addValueChangeListener(event -> {
 	            if (event.getValue()) {
 	                setFormDateResolution(Resolution.DAY);
 	            } else {
 	                setFormDateResolution(Resolution.MINUTE);
 	            }
-	        });
+	        }); */
 
-	        captionField = createTextField("Caption");
-	        captionField.setInputPrompt("Event name");
+	        captionField = createTextField("Employee");
+	        captionField.setInputPrompt("Employee Name");
 	        captionField.setRequired(true);
-	        final TextField whereField = createTextField("Where");
-	        whereField.setInputPrompt("Address or location");
-	        final TextArea descriptionField = createTextArea("Description");
-	        descriptionField.setInputPrompt("Describe the event");
+	        //final TextField whereField = createTextField("Where");
+	        //whereField.setInputPrompt("Address or location");
+	        final TextArea descriptionField = createTextArea("Notes");
+	        descriptionField.setInputPrompt("");
 	        descriptionField.setRows(3);
-	        descriptionField.setRequired(true);
+	        descriptionField.setRequired(false);
 
 	        final ComboBox styleNameField = createStyleNameComboBox();
-	        styleNameField.setInputPrompt("Choose calendar");
+	        styleNameField.setInputPrompt("Assign a position");
 	        styleNameField.setTextInputAllowed(false);
 
 	        formLayout.addComponent(startDateField);
 	        endDateField.setRequired(true);
 	        startDateField.setRequired(true);
 	        formLayout.addComponent(endDateField);
-	        formLayout.addComponent(allDayField);
+	        //formLayout.addComponent(allDayField);
 	        formLayout.addComponent(captionField);
 	        // captionField.setComponentError(new UserError("Testing error"));
 	        /*if (eventClass == CalendarTestEvent.class) {
@@ -391,13 +407,13 @@ public class ScheduleView extends GridLayout implements View {
 
 	        scheduleEventFieldGroup.bind(startDateField, "start");
 	        scheduleEventFieldGroup.bind(endDateField, "end");
-	        scheduleEventFieldGroup.bind(captionField, "caption");
-	        scheduleEventFieldGroup.bind(descriptionField, "description");
+	        scheduleEventFieldGroup.bind(captionField, "caption"); //employee 
+	        scheduleEventFieldGroup.bind(descriptionField, "description"); //notes
 	       /* if (eventClass == CalendarTestEvent.class) {
 	            scheduleEventFieldGroup.bind(whereField, "where");
 	        } */
 	        scheduleEventFieldGroup.bind(styleNameField, "styleName");
-	        scheduledEventBinder.bind(allDayField, CalendarEvent::isAllDay, null);
+	        //scheduledEventBinder.bind(allDayField, CalendarEvent::isAllDay, null);
 	 }
 	
 	    private ComboBox createStyleNameComboBox() {
