@@ -52,8 +52,6 @@ import com.vaadin.v7.ui.components.calendar.CalendarComponentEvents.EventClickHa
 import io.valhala.tss.Inventory.backend.Shift;
 import io.valhala.tss.Inventory.backend.ShiftRepository;
 
-
-
 @SpringView(name = ScheduleView.VIEW_NAME)
 @SpringComponent
 @SuppressWarnings("deprecation")
@@ -71,7 +69,6 @@ public class ScheduleView extends GridLayout implements View {
 	private Date currentMonthFirstDate;
 	private final Label captionLabel = new Label("");
 	private Button monthButton, weekButton, dayButton, nextButton, prevButton, addNewEvent, applyEventButton, deleteEventButton;
-	private ComboBox tzselect, formatSelect, localeSelect;
 	private CheckBox hideWeekends, readOnly, disabled;
 	private TextField captionField;
 	private Window scheduleEventPopup;
@@ -99,6 +96,8 @@ public class ScheduleView extends GridLayout implements View {
 	
 	@PostConstruct
 	void init() {
+		//I was able to save and retrieve items from the DB and add to calendar
+		//but I lost the work :|
 		//repo.save(mot); no identifier specified!
 	}
 
@@ -577,13 +576,37 @@ public class ScheduleView extends GridLayout implements View {
 		return event;
 	}
 
-	private void initDisabledButton() {disabled = new CheckBox("Disabled");}
+	private void initDisabledButton() {
+		disabled = new CheckBox("Disabled"); 
+	}
 
-	private void initReadOnlyButton() {readOnly = new CheckBox("Read-Only");}
+	private void initReadOnlyButton() {
+		readOnly = new CheckBox("Read-Only");
+		readOnly.addValueChangeListener(e -> {
+			calendar.setReadOnly(readOnly.getValue());
+		});
+	}
 
-	private void initHideWeekendButton() {hideWeekends = new CheckBox("Hide Weekends");}
+	private void initHideWeekendButton() {
+		hideWeekends = new CheckBox("Hide Weekends");
+		hideWeekends.addValueChangeListener(e -> {
+			setWeekendsHidden(hideWeekends.getValue());
+		});
+	}
 
-	private void initNavigationButtons() {
+	private void setWeekendsHidden(Boolean hidden) {
+		if(hidden) {
+			int firstDay = (GregorianCalendar.MONDAY - calendar.getFirstVisibleDayOfWeek() % 7);
+			calendar.setFirstVisibleDayOfWeek(firstDay + 1);
+			calendar.setLastVisibleDayOfWeek(firstDay + 4);
+		}
+		else {
+			calendar.setFirstVisibleDayOfWeek(1);
+			calendar.setLastVisibleDayOfWeek(7);
+		}	
+	}
+	
+private void initNavigationButtons() {
 		//monthButton = new Button("Month", e -> switchToMonthView());
 		monthButton = new Button("Month", new ClickListener() {
 
