@@ -320,11 +320,14 @@ public class ScheduleView extends GridLayout implements View {
             @Override
             public void buttonClick(ClickEvent event) {
                 Date start = getToday();
-                start.setHours(0);
+                start.setHours(8);
                 start.setMinutes(0);
                 start.setSeconds(0);
 
                 Date end = getEndOfDay(internalCalendar, start);
+                end.setHours(22);
+                end.setMinutes(0);
+                end.setSeconds(0);
 
                 showEventPopup(createNewEvent(start, end), true);
             }
@@ -606,7 +609,7 @@ public class ScheduleView extends GridLayout implements View {
 		}	
 	}
 	
-private void initNavigationButtons() {
+	private void initNavigationButtons() {
 		//monthButton = new Button("Month", e -> switchToMonthView());
 		monthButton = new Button("Month", new ClickListener() {
 

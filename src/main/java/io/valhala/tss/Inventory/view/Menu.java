@@ -30,7 +30,7 @@ public class Menu extends CssLayout
 		menuHeader.addComponent(title); //also need logo
 		menuPart.addComponent(menuHeader);
 		menuItems = new CssLayout();
-		//menuItems.setPrimaryStyleName(VALO_MENUITEMS);
+		menuItems.setPrimaryStyleName("valo-menuitems");
 		menuPart.addComponent(menuItems);
 		
 		/*MenuBar logoutMenu = new MenuBar();
@@ -57,7 +57,7 @@ public class Menu extends CssLayout
                     menuPart.addStyleName(VALO_MENU_VISIBLE);
                 }
             }
-        });
+        }); 
         
 
         showMenu.addStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -71,8 +71,7 @@ public class Menu extends CssLayout
 		createNavigationButton("Home", DashboardView.VIEW_NAME, VaadinIcons.HOME);
 		createNavigationButton("Inventory", InventoryView.VIEW_NAME, VaadinIcons.PACKAGE);
 		createNavigationButton("Schedule", ScheduleView.VIEW_NAME, VaadinIcons.CALENDAR_O);
-		createNavigationButton("Time clock", TimesheetView.VIEW_NAME, VaadinIcons.CALENDAR_CLOCK);
-		createNavigationButton("Task List", "Task List", VaadinIcons.NOTEBOOK);
+		createNavigationButton("Resources", ResourceView.VIEW_NAME, VaadinIcons.NOTEBOOK);
 		
 	}
 	
