@@ -42,6 +42,11 @@ import com.vaadin.ui.themes.ValoTheme;
 import io.valhala.tss.Inventory.backend.InventoryItem;
 import io.valhala.tss.Inventory.backend.ItemRepository;
 
+//This class is nearly finished
+//Still need all field validation, some changes to the entity class
+//new entity classes: user (isAdmin?), patron
+//fix search logic
+//scanning/checkout/checkin features
 @SuppressWarnings("unchecked")
 @SpringView(name = InventoryView.VIEW_NAME)
 @SpringComponent
