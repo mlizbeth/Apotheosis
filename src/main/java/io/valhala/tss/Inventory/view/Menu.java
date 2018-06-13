@@ -1,5 +1,6 @@
 package io.valhala.tss.Inventory.view;
 
+import com.vaadin.client.ui.menubar.MenuBar;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Resource;
 import com.vaadin.ui.Alignment;
@@ -7,6 +8,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.themes.ValoTheme;
 
 
@@ -33,45 +35,13 @@ public class Menu extends CssLayout
 		menuItems.setPrimaryStyleName("valo-menuitems");
 		menuPart.addComponent(menuItems);
 		
-		/*MenuBar logoutMenu = new MenuBar();
-		logoutMenu.addItem("Logout", VaadinIcons.SIGN_OUT, new Command() {
-
-			@Override
-			public void menuSelected(MenuItem selectedItem) 
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-		});
-		
-		logoutMenu.addStyleName("user-menu");
-		menuPart.addComponent(logoutMenu);
-		
-        final Button showMenu = new Button("Menu", new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                if (menuPart.getStyleName().contains(VALO_MENU_VISIBLE)) {
-                    menuPart.removeStyleName(VALO_MENU_VISIBLE);
-                } else {
-                    menuPart.addStyleName(VALO_MENU_VISIBLE);
-                }
-            }
-        }); 
-        
-
-        showMenu.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        showMenu.addStyleName(ValoTheme.BUTTON_SMALL);
-        showMenu.addStyleName(VALO_MENU_TOGGLE);
-        showMenu.setIcon(VaadinIcons.MENU);
-        menuPart.addComponent(showMenu);*/
-		
 		addComponent(menuPart);
 		
 		createNavigationButton("Home", DashboardView.VIEW_NAME, VaadinIcons.HOME);
 		createNavigationButton("Inventory", InventoryView.VIEW_NAME, VaadinIcons.PACKAGE);
 		createNavigationButton("Schedule", ScheduleView.VIEW_NAME, VaadinIcons.CALENDAR_O);
 		createNavigationButton("Resources", ResourceView.VIEW_NAME, VaadinIcons.NOTEBOOK);
+		createNavigationButton("Pickup/Drop Shifts", "#", VaadinIcons.ANCHOR);
 		
 	}
 	
