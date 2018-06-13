@@ -23,12 +23,8 @@ public class InventoryItem implements Serializable, Cloneable {
 	@NotNull
 	private long itemCode;
 	@NotNull
-	private int itemQuantity; //needed?
-	//@NotNull
-	//private boolean isAvailable;
-	//@NotNull
-	//private String note;
-	
+	private int itemQuantity;
+
 	public InventoryItem() {}
 	
 	public InventoryItem(long itemCode) {this.itemCode = itemCode;}
