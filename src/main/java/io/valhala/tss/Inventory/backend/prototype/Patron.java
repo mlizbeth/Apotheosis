@@ -1,61 +1,65 @@
 package io.valhala.tss.Inventory.backend.prototype;
 import java.util.List;
-
+import java.util.Set;
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import org.springframework.lang.Nullable;
 @Entity
-@Table(name="patrons")
+@Table(name="patron")
 public class Patron {
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long id;
-	@NotNull
-	private long trinityID;
+	private Long id;
 	@NotNull
 	private String name, email;
-	
-	private Item[] checkedOutItems;
-	private List<Item> itemHistory;
+	@NotNull
 	private boolean owesFines;
+	@Nullable
 	private int finesOwed;
-	
-	public Patron() {
 
+	
+	public Patron() {}
+	
+	public Patron(Long id, String name, String email, boolean owesFines) {
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.owesFines = owesFines;
 	}
-	//can ID redundancy be reduced? Their ID comes from a magnetic strip
+	
+	public Patron(Long id, String name, String email, Item[] checkedOutItems, List<Item> itemHistory, boolean owesFines, int finesOwed) {
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.owesFines = owesFines;
+		this.finesOwed = finesOwed;
+	}
+	
+	@Column(name="trinity_id")
 	public long getId() {return id;}
 
-	public void setId(long id) {this.id = id;}
-
-	public long getTrinityID() {return trinityID;}
-
-	public void setTrinityID(long trinityID) {this.trinityID = trinityID;}
-
+	public void setId(Long id) {this.id = id;}
+	
+	@Column(name="name")
 	public String getName() {return name;}
 
 	public void setName(String name) {this.name = name;}
-
+	
+	@Column(name="email")
 	public String getEmail() {return email;}
 
 	public void setEmail(String email) {this.email = email;}
-
-	public Item[] getCheckedOutItems() {return checkedOutItems;}
-
-	public void setCheckedOutItems(Item[] checkedOutItems) {this.checkedOutItems = checkedOutItems;}
-
-	public List<Item> getItemHistory() {return itemHistory;}
-
-	public void setItemHistory(List<Item> itemHistory) {this.itemHistory = itemHistory;}
-
+	
+	@Column(name="owes_fines")
 	public boolean isOwesFines() {return owesFines;}
 
 	public void setOwesFines(boolean owesFines) {this.owesFines = owesFines;}
-
+	
+	@Column(name="fines_owed")
 	public int getFinesOwed() {return finesOwed;}
 
 	public void setFinesOwed(int finesOwed) {this.finesOwed = finesOwed;}
+	
 }
