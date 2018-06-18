@@ -64,7 +64,7 @@ public class InventoryView extends HorizontalLayout implements View {
 	//filter should request focus when a barcode is scanned.... or capture the scan code and then apply the search
 	public static final String VIEW_NAME = "Inventory";
 	private TextField filter;
-	private Button addItem;
+	private Button addItem, checkOutItem;
 	private ComboBox<String> filterMode;
 	private HorizontalLayout toolBar;
 	private VerticalLayout left;
@@ -92,8 +92,9 @@ public class InventoryView extends HorizontalLayout implements View {
 		filter.setPlaceholder("TextField");
 		filter.setMaxLength(20);
 
-		addItem = new Button("add item");
-		toolBar = new HorizontalLayout(filterMode, filter, addItem);
+		checkOutItem = new Button("Check Out");
+		addItem = new Button("Add item");
+		toolBar = new HorizontalLayout(filterMode, filter, checkOutItem, addItem);
 		left = new VerticalLayout(toolBar, iList);
 		left.setSizeFull();
 		
@@ -117,6 +118,7 @@ public class InventoryView extends HorizontalLayout implements View {
 		iList.setSizeFull();
 		iList.setSelectionMode(Grid.SelectionMode.SINGLE);
 
+		
 		addItem.addStyleName(ValoTheme.BUTTON_PRIMARY);
 
 		initListeners();
