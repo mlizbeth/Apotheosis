@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.vaadin.data.Binder;
+import com.vaadin.data.converter.LocalDateToDateConverter;
+import com.vaadin.data.converter.StringToBooleanConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.icons.VaadinIcons;
@@ -26,7 +29,9 @@ import com.vaadin.shared.Position;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
@@ -37,10 +42,13 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.themes.ValoTheme;
 
 import io.valhala.tss.Inventory.backend.InventoryItem;
 import io.valhala.tss.Inventory.backend.ItemRepository;
+
+
 
 //This class is nearly finished
 //Still need all field validation, some changes to the entity class
@@ -51,20 +59,17 @@ import io.valhala.tss.Inventory.backend.ItemRepository;
 @SpringView(name = InventoryView.VIEW_NAME)
 @SpringComponent
 public class InventoryView extends HorizontalLayout implements View {
-
 	@Autowired
 	ItemRepository repo;
 	//filter should request focus when a barcode is scanned.... or capture the scan code and then apply the search
-	public static final String VIEW_NAME = "Inventory"; //InventoryView
-	private TextField filter, barField, nameField, descField, typeField;
-	private Button addItem, genBar, applyBtn, printBtn;
-	private ComboBox filterMode;
-	private HorizontalLayout toolBar, winSplit;
-	private VerticalLayout winLeft, winRight, left;
-	private Window barWindow;
+	public static final String VIEW_NAME = "Inventory";
+	private TextField filter;
+	private Button addItem;
+	private ComboBox<String> filterMode;
+	private HorizontalLayout toolBar;
+	private VerticalLayout left;
 	private Grid<InventoryItem> iList = new Grid<>(InventoryItem.class);
 	private editPanel editForm = new editPanel();
-	private Label preview;
 	private String qrBuilder;
 	private boolean searchByName = true;
 
@@ -77,8 +82,8 @@ public class InventoryView extends HorizontalLayout implements View {
 
 	private void initComponents() {
 	
-		filterMode = new ComboBox();
-		filterMode.setItems("Filter by Barcode", "Filter by Name");
+		filterMode = new ComboBox<String>();
+		filterMode.setItems("Filter by Barcode", "Filter by Name", "Filter by Patron");
 		filterMode.setValue("Filter by Name");
 		filterMode.setEmptySelectionAllowed(false);
 		
@@ -87,42 +92,12 @@ public class InventoryView extends HorizontalLayout implements View {
 		filter.setPlaceholder("TextField");
 		filter.setMaxLength(20);
 
-		barField = new TextField("Barcode");
-		barField.setDescription("Barcode will be generated");
-		barField.setIcon(VaadinIcons.QUESTION_CIRCLE_O);
-		barField.setReadOnly(false);
-
-		nameField = new TextField("Item Name");
-		nameField.setRequiredIndicatorVisible(true);
-
-		descField = new TextField("Item Description");
-		descField.setRequiredIndicatorVisible(true);
-
-		typeField = new TextField("Item Type");
-		typeField.setRequiredIndicatorVisible(true);
-
-		addItem = new Button("Add Item");
-		genBar = new Button("New Barcode");
-		applyBtn = new Button("Apply to new item");
-		printBtn = new Button("Print");
-
-		preview = new Label();
-
-		toolBar = new HorizontalLayout(filterMode, filter, genBar, addItem);
+		addItem = new Button("add item");
+		toolBar = new HorizontalLayout(filterMode, filter, addItem);
 		left = new VerticalLayout(toolBar, iList);
 		left.setSizeFull();
-		winSplit = new HorizontalLayout();
-		winLeft = new VerticalLayout();
-		winRight = new VerticalLayout();
-		
-
-		winRight.addComponent(preview);
-		winLeft.addComponents(barField, nameField, descField, typeField, applyBtn);
-		barWindow = new Window(null, winSplit);
-		winSplit.addComponents(winLeft, winRight);
 		
 		addComponents(left, editForm);
-	
 
 		initPreferences();
 
@@ -138,25 +113,11 @@ public class InventoryView extends HorizontalLayout implements View {
 		left.setSizeFull();
 		left.setExpandRatio(iList, 1);
 		
-		iList.setColumns("itemName", "itemType", "itemCode", "itemQuantity");
+		iList.setColumns("name", "type", "barcode");
 		iList.setSizeFull();
 		iList.setSelectionMode(Grid.SelectionMode.SINGLE);
-		
+
 		addItem.addStyleName(ValoTheme.BUTTON_PRIMARY);
-		
-		winSplit.setSpacing(true);
-		
-		winLeft.setSpacing(true);
-		
-		barWindow.setResponsive(true);
-		barWindow.setWidth("500px");
-		barWindow.setHeight("500px");
-		barWindow.setModal(true);
-		barWindow.center();
-		barWindow.setResizable(false);
-		
-		preview.setWidth("100px");
-		preview.setHeight("100px");
 
 		initListeners();
 	}
@@ -186,40 +147,6 @@ public class InventoryView extends HorizontalLayout implements View {
 			editForm.setVisible(true);
 			editForm.setItem(new InventoryItem());
 		});
-		
-
-		barField.addValueChangeListener(e -> {
-			makePreview();
-		});
-
-		nameField.addValueChangeListener(e -> {
-			makePreview();
-		});
-
-		typeField.addValueChangeListener(e -> {
-			makePreview();
-		});
-
-		descField.addValueChangeListener(e -> {
-			makePreview();
-		});
-
-		applyBtn.addClickListener(e -> {
-			
-		});
-
-		barWindow.addCloseListener(e -> {
-			barField.clear();
-			nameField.clear();
-			descField.clear();
-			typeField.clear();
-		});
-
-		genBar.addClickListener(e -> {
-			if(!getUI().getWindows().contains(barWindow)) {
-				getUI().addWindow(barWindow);
-			}
-		});
 
 		iList.asSingleSelect().addValueChangeListener(e -> {
 			if(e.getValue() == null) {
@@ -230,48 +157,20 @@ public class InventoryView extends HorizontalLayout implements View {
 			}
 		});
 	}
-		
-	private void refresh() 
-	{
+	//([0-9])+
+	private void refresh() {
 
 		if(!searchByName) {
 			if(filter.getErrorMessage() != null && filter.getValue().matches("[^(A-Z)^(a-z)]+")) {
 				filter.setComponentError(null);
 			}
-			if(filter.getValue().matches("([0-9])+")) { 
-				//save the value to a variable.. but its need to be a long
-			}
 			else {
 				filter.setComponentError(new UserError("Entry must be numeric. Alternatively you can swap filter modes."));
 			}
-			//Long.parseLong(Long.valueOf(temp)); ?
-			//iList.setItems(repo.findAllByItemCodeContains(Long.valueOf(temp)));	
 		}
 		else {
-			iList.setItems(repo.findAllByItemNameContainsIgnoreCase(filter.getValue()));
+			iList.setItems(repo.findAllByNameContainsIgnoreCase(filter.getValue()));
 		}
-	}
-
-	private void makePreview() {
-		winRight.removeAllComponents();
-		qrBuilder = "";
-		if(!barField.getValue().equals("")) {
-			System.out.print(barField.getValue());
-			qrBuilder += barField.getValue() + "\n";
-		}
-		if(!nameField.getValue().equals("")) {
-			qrBuilder += nameField.getValue() + "\n"; //dont remember if it replaces or appends the value
-		}
-		if(!typeField.getValue().equals("")) {
-			qrBuilder += typeField.getValue() + "\n";
-		}
-		if(!descField.getValue().equals("")) {
-			qrBuilder += descField.getValue() + "\n";
-		}
-		StreamSource imgSource = new BarcodeStream();
-		StreamResource res = new StreamResource(imgSource, "test.jpg");
-		winRight.addComponent(new Image("Preview", res));
-
 	}
 
 	@PostConstruct
@@ -282,67 +181,110 @@ public class InventoryView extends HorizontalLayout implements View {
 
 	private class editPanel extends FormLayout {
 		private InventoryItem item;
-		private TextField itemName, itemType, itemCode, itemQuantity;
+		private TextField itemName, itemType, itemBarcode;
+		private DateField checkOutDate, dueDate;
 		private Button save, delete, cancel;
-		private TextField itemId;
+		private TextField isAvailable, isLate;
+		private TextArea notes;
+		private VerticalLayout genLayout;
 
 		private Binder<InventoryItem> binder = new Binder<>(InventoryItem.class); 
 		
+		private void addListeners() {
+			
+			notes.addValueChangeListener(e -> {
+				makePreview();
+			});
+			
+			itemBarcode.addValueChangeListener(e -> {
+				makePreview();
+			});
+			
+			itemType.addValueChangeListener(e -> {
+				makePreview();
+			});
+			
+			itemName.addValueChangeListener(e -> {
+				makePreview();
+			});
+		}
+		
+		private void makePreview() {
+			genLayout.removeAllComponents();
+			qrBuilder = "";
+			if(!itemBarcode.getValue().equals("")) {
+				qrBuilder += itemBarcode.getValue() + "\n";
+			}
+			if(!itemName.getValue().equals("")) {
+				qrBuilder += itemName.getValue() + "\n"; 
+			}
+			if(!itemType.getValue().equals("")) {
+				qrBuilder += itemType.getValue() + "\n";
+			}
+			if(!notes.getValue().equals("")) {
+				qrBuilder += notes.getValue() + "\n";
+			}
+			StreamSource imgSource = new BarcodeStream();
+			StreamResource res = new StreamResource(imgSource, "qrcode.jpg");
+			genLayout.addComponent(new Image("", res));
+		}
+
+		
 		public editPanel() {
+			genLayout = new VerticalLayout();
 			initEditConf();
 			initEditLayout();
+			addListeners();
 			setSizeUndefined();
 			Responsive.makeResponsive(this);
 			binder.bindInstanceFields(this);
-			
 		}
 
 		private void initEditLayout() {
 			HorizontalLayout options = new HorizontalLayout(save, delete, cancel);
 			options.setSpacing(true);
-			addComponents(itemId, itemName, itemType, itemCode, itemQuantity, options);
+			addComponents(itemBarcode, itemName, itemType, isAvailable, isLate, checkOutDate, dueDate, notes, genLayout, options);
 		}
 
 		private void initEditConf() {
 			save = new Button("Save");
 			delete = new Button("Delete");
 			cancel = new Button("Cancel");
-			itemId = new TextField("Item ID");
-			itemId.setEnabled(false);
+			itemBarcode = new TextField("Barcode");
+			itemBarcode.setDescription("Barcode will be generated");
+			itemBarcode.setIcon(VaadinIcons.QUESTION_CIRCLE_O);
+			itemBarcode.setEnabled(false);
 			itemName = new TextField("Name");
+			itemName.setRequiredIndicatorVisible(true);
 			itemName.setMaxLength(64);
 			itemType = new TextField("Type");
+			itemType.setRequiredIndicatorVisible(true);
 			itemType.setMaxLength(64);
-			itemCode = new TextField("Barcode");
-			itemCode.setMaxLength(20);
-			itemQuantity = new TextField("Quantity");
-			itemQuantity.setMaxLength(5);
-			
+			isAvailable = new TextField("Availability");
+			isAvailable.setEnabled(false);
+			isLate = new TextField("Overdue");
+			isLate.setEnabled(false);
+			checkOutDate = new DateField("Checkout Date");
+			dueDate = new DateField("Date Due");
+			notes = new TextArea("Notes");
+
 			cancel.addClickListener(e -> this.cancel());
 			save.addClickListener(e -> this.save());
 			delete.addClickListener(e -> this.delete());
 			
-			/*
-			 * Need to validate the rest of the fields, and test that this validates correctly.
-			 * Check for overflows
-			 * use a boolean to check if fields are strings, then dont allow saving
-			 */
 
-			//binder.forMemberField(itemName).withValidator((string -> string != null && !string.isEmpty()), "Values cannot be empty or contain only numbers");
-			//binder.forMemberField(itemType).withValidator(string -> string != null && !string.isEmpty(), "Values cannot be empty or contain only numbers");
-			binder.forMemberField(itemCode).withValidator(string -> string != null && !string.isEmpty(), "Values cannot be empty" ).withConverter(new StringToLongConverter("input should be an integer")).withValidator(Long -> Long > 0, "Input must be positive");
-			binder.forMemberField(itemQuantity).withValidator(string -> string != null && !string.isEmpty(), "Values cannot be empty" ).withConverter(new StringToIntegerConverter("input should be an integer")).withValidator(integer -> integer >= 0, "Input must be positive");
-			binder.forMemberField(itemId).withValidator(string -> string != null && !string.isEmpty(), "Values cannot be empty" ).withConverter(new StringToLongConverter("input should be an integer")).withValidator(Long -> Long > 0, "Input must be positive");
-
-			
+			binder.forMemberField(checkOutDate).withConverter(new LocalDateToDateConverter());
+			binder.forMemberField(dueDate).withConverter(new LocalDateToDateConverter());
+			binder.forMemberField(itemName).asRequired().withValidator((string -> string != null && !string.isEmpty()), "Values cannot be empty").bind("name");
+			binder.forMemberField(itemType).asRequired().withValidator((string -> string != null && !string.isEmpty()), "Values cannot be empty").bind("type");
+			binder.forMemberField(itemBarcode).withConverter(new StringToLongConverter(itemBarcode.getValue())).bind("barcode");
+			binder.forMemberField(isAvailable).bind("isAvailable");
+			binder.forMemberField(isLate).bind("isLate");
 		}
 		
 		private void delete() {
-			repo.delete(item); //need to automagically refresh the grid check for null
-			Page.getCurrent().reload();
-			//confirmation for deletion/administrator override for deletion.
-			//refresh
-			//set form to visible
+			repo.delete(item); 
+			Page.getCurrent().reload(); //confirmation for deletion/administrator override for deletion.
 		}
 
 		private void save() {
@@ -366,10 +308,11 @@ public class InventoryView extends HorizontalLayout implements View {
 		}
 		
 		public void setItem(InventoryItem item) {
-			//editPanel.setVisible(true);
 			setVisible(true);
 			this.item = item;
-			binder.setBean(item);
+			try {
+				binder.setBean(item);
+			} catch(NullPointerException e) {} 
 		}
 	}
 

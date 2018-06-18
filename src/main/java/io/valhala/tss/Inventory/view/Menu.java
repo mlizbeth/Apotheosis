@@ -14,6 +14,8 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public class Menu extends CssLayout
 {
+
+	private static final long serialVersionUID = 2245014338713756386L;
 	private CssLayout menuItems, menuPart;
 	private final HorizontalLayout menuHeader;
 	private Label title;
