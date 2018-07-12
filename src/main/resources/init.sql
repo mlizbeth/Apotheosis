@@ -4,26 +4,27 @@
 #Method of tracking Who has What and When it's due.
 
 create table item (
-  barcode bigint not null auto_increment primary key,
-  name varchar(20) not null,
-  type varchar(20) not null,
-  is_available boolean not null,
-  is_late boolean null,
-  notes varchar(255) null,
-  check_out_date datetime null,
-  due_date datetime null
+  i_barcode bigint not null auto_increment primary key,
+  i_name varchar(20) not null,
+  i_type varchar(20) not null,
+  i_is_available boolean not null,
+  i_is_late boolean null,
+  i_notes varchar(255) null,
+  i_check_out_date datetime null,
+  i_due_date datetime null
   #create index idx_barcode (barcode)
 );
   
 create table patron (
-    trinity_id bigint not null primary key,
-    name varchar(30) not null,
-    email varchar(20) not null,
-    owes_fines boolean not null,
-    fines_owed int null
+    p_id bigint not null primary key,
+    p_name varchar(30) not null,
+    p_email varchar(20) not null,
+    p_owes_fines boolean not null,
+    p_fines_owed int null
     #create index idx_trinity_id (trinity_id)
 );
    
+#create primary key as combination of patron id/item id
 create table checked_out_items (
   ref_id bigint primary key auto_increment not null,
   patron_id bigint not null,
@@ -34,19 +35,19 @@ create table checked_out_items (
   
 alter table checked_out_items
 add constraint fk_patron_id
-foreign key (patron_id) references patron(trinity_id),
+foreign key (patron_id) references patron(p_id),
 add constraint fk_item_id
-foreign key (item_id) references item(barcode)
+foreign key (item_id) references item(i_barcode)
 #add constraint fk_item_available
 #add constraint fk_check_out_date
 #add constraint fk_due_date
-#foreign key (item_available references item(is_available)
-#foreign key (item_check_out_date) references item(check_out_date)
-#foreign key (item_due_date) references item(due_date)
+#foreign key (item_available references item(i_is_available)
+#foreign key (item_check_out_date) references item(i_check_out_date)
+#foreign key (item_due_date) references item(i_due_date)
 on update cascade
 on delete cascade;     
     
-    
+   
 insert into patron values(0834184,'Madeline Kotara','mkotara@trinity.edu',0,null);
 insert into item values(1,'Chromebook','Laptop',0,null,null,null,null);
 insert into item values(2,'Dell Latitude','Laptop',0,null,null,null,null);
@@ -61,3 +62,8 @@ inner join item;
 select * from item;
 select * from patron;
 select * from checked_out_items;
+
+
+#checked out items history table -> copy checked_out_items, combine against patron ID and index
+
+

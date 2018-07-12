@@ -19,7 +19,7 @@ public class InventoryItem implements Serializable, Cloneable {
 	
 	private static final long serialVersionUID = 5592334329765505365L;
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.AUTO) //generate as String,
 	private Long barcode;
 	@NotNull
 	private String name, type;
@@ -77,12 +77,12 @@ public class InventoryItem implements Serializable, Cloneable {
 	@Column(name="is_late")
 	public String getisLate() {return isLate;}
 	
-	public void setLate(String isLate) {this.isLate = isLate;}
+	public void setisLate(String isLate) {this.isLate = isLate;}
 	
 	@Column(name="availability")
 	public String getisAvailable() {return isAvailable;}
 	
-	public void setAvailable(String isAvailable) {this.isAvailable = isAvailable;}
+	public void setisAvailable(String isAvailable) {this.isAvailable = isAvailable;}
 	
 	@Column(name="notes") //bigtext?
 	public String getNotes() {return notes;}

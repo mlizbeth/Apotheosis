@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,6 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.vaadin.data.Binder;
 import com.vaadin.data.converter.LocalDateToDateConverter;
-import com.vaadin.data.converter.StringToBooleanConverter;
-import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.converter.StringToLongConverter;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
@@ -25,26 +22,21 @@ import com.vaadin.server.Responsive;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.server.UserError;
-import com.vaadin.shared.Position;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
+//import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.themes.ValoTheme;
-
 import io.valhala.tss.Inventory.backend.InventoryItem;
 import io.valhala.tss.Inventory.backend.ItemRepository;
 
@@ -55,6 +47,7 @@ import io.valhala.tss.Inventory.backend.ItemRepository;
 //new entity classes: user (isAdmin?), patron
 //fix search logic
 //scanning/checkout/checkin features
+//checkOutTo field if not available!
 @SuppressWarnings("unchecked")
 @SpringView(name = InventoryView.VIEW_NAME)
 @SpringComponent
@@ -64,8 +57,8 @@ public class InventoryView extends HorizontalLayout implements View {
 	//filter should request focus when a barcode is scanned.... or capture the scan code and then apply the search
 	public static final String VIEW_NAME = "Inventory";
 	private TextField filter;
-	private Button addItem, checkOutItem;
-	private ComboBox<String> filterMode;
+	private Button addItem;
+	private ComboBox<String> filterMode, aOps;
 	private HorizontalLayout toolBar;
 	private VerticalLayout left;
 	private Grid<InventoryItem> iList = new Grid<>(InventoryItem.class);
@@ -92,11 +85,14 @@ public class InventoryView extends HorizontalLayout implements View {
 		filter.setPlaceholder("TextField");
 		filter.setMaxLength(20);
 
-		checkOutItem = new Button("Check Out");
+		aOps = new ComboBox<>();
+		aOps.setItems("Catalog", "Check In", "Check Out", "Renew");
+		aOps.setValue("Catalog");
+		aOps.setEmptySelectionAllowed(false);
+			
 		addItem = new Button("Add item");
-		toolBar = new HorizontalLayout(filterMode, filter, checkOutItem, addItem);
+		toolBar = new HorizontalLayout(filterMode, filter, aOps, addItem);
 		left = new VerticalLayout(toolBar, iList);
-		left.setSizeFull();
 		
 		addComponents(left, editForm);
 
@@ -127,9 +123,14 @@ public class InventoryView extends HorizontalLayout implements View {
 
 	private void initListeners() {
 
+		aOps.addValueChangeListener(e -> {
+			//System.out.println("Test");
+		});
+		
 		filterMode.addValueChangeListener(e -> {
 			if(filterMode.getValue().equals("Filter by Barcode")) {
 				searchByName = false;
+				//System.out.println("searchByName: " + searchByName);
 			}
 			else {
 				searchByName = true;
@@ -141,7 +142,7 @@ public class InventoryView extends HorizontalLayout implements View {
 				iList.setItems(repo.findAll());
 			}
 			else {
-			refresh();
+				refresh();
 			}
 		});
 		
@@ -151,11 +152,25 @@ public class InventoryView extends HorizontalLayout implements View {
 		});
 
 		iList.asSingleSelect().addValueChangeListener(e -> {
-			if(e.getValue() == null) {
-				editForm.setVisible(false);
+			if(aOps.getValue().equals("Catalog")) {
+				if(e.getValue() == null) {
+					editForm.setVisible(false);
+				}
+				else {
+					editForm.setItem(e.getValue());
+				}
 			}
-			else {
-				editForm.setItem(e.getValue());
+			
+			if(aOps.getValue().equals("Check In")) {
+				
+			}
+			
+			if(aOps.getValue().equals("Check Out")) {
+				
+			}
+			
+			if(aOps.getValue().equals("Renew")) {
+				
 			}
 		});
 	}
@@ -163,8 +178,13 @@ public class InventoryView extends HorizontalLayout implements View {
 	private void refresh() {
 
 		if(!searchByName) {
-			if(filter.getErrorMessage() != null && filter.getValue().matches("[^(A-Z)^(a-z)]+")) {
-				filter.setComponentError(null);
+			if(filter.getValue().matches("[0-9]+")) {
+				if(filter.getComponentError() != null) {
+					filter.setComponentError(null);
+				}
+				//iList.setItems(repo.findAllByBarcodeContains(Long.valueOf(filter.getValue()))); // value [%VALUE%] does not match [java.lang.Long (n/a)]
+				iList.setItems(repo.findByBarcode(Long.valueOf(filter.getValue())));
+				
 			}
 			else {
 				filter.setComponentError(new UserError("Entry must be numeric. Alternatively you can swap filter modes."));
@@ -180,19 +200,43 @@ public class InventoryView extends HorizontalLayout implements View {
 		iList.setItems(repo.findAll());
 	}
 	
+	private class renewPopup extends Window {
+		//Scan item
+		//show item details
+		//Scan MSR
+		//show patron details?
+		//Show when checked out and when due
+		//Apply new due date
+		//update DB
+	}
+	
+	private class checkOutPopup extends Window {
+		
+	}
+	
+	private class checkInPopup extends Window {
+		
+	}
+	
 
 	private class editPanel extends FormLayout {
 		private InventoryItem item;
 		private TextField itemName, itemType, itemBarcode;
 		private DateField checkOutDate, dueDate;
 		private Button save, delete, cancel;
-		private TextField isAvailable, isLate;
+		private ComboBox<String> isAvailable, isLate;
 		private TextArea notes;
 		private VerticalLayout genLayout;
 
 		private Binder<InventoryItem> binder = new Binder<>(InventoryItem.class); 
 		
+		
 		private void addListeners() {
+			
+			isAvailable.addValueChangeListener(e -> {
+				System.out.println("Test"); //still not editable with a listener
+				//and still not editable by explicitly calling setEnabled(true), setReadOnly(false);
+			});
 			
 			notes.addValueChangeListener(e -> {
 				makePreview();
@@ -262,10 +306,16 @@ public class InventoryView extends HorizontalLayout implements View {
 			itemType = new TextField("Type");
 			itemType.setRequiredIndicatorVisible(true);
 			itemType.setMaxLength(64);
-			isAvailable = new TextField("Availability");
-			isAvailable.setEnabled(false);
-			isLate = new TextField("Overdue");
-			isLate.setEnabled(false);
+			isAvailable = new ComboBox<String>("Availability");
+			isAvailable.setItems("True", "False"); //should be managed by sys too
+			isAvailable.setEmptySelectionAllowed(false);
+			isAvailable.setTextInputAllowed(false);
+			isLate = new ComboBox<String>("Overdue");
+			isLate.setItems("True", "False");
+			isLate.setDescription("Value is managed by the system");
+			isLate.setIcon(VaadinIcons.QUESTION_CIRCLE_O);
+			isLate.setEmptySelectionAllowed(false);
+			isLate.setTextInputAllowed(false);
 			checkOutDate = new DateField("Checkout Date");
 			dueDate = new DateField("Date Due");
 			notes = new TextArea("Notes");
@@ -280,8 +330,8 @@ public class InventoryView extends HorizontalLayout implements View {
 			binder.forMemberField(itemName).asRequired().withValidator((string -> string != null && !string.isEmpty()), "Values cannot be empty").bind("name");
 			binder.forMemberField(itemType).asRequired().withValidator((string -> string != null && !string.isEmpty()), "Values cannot be empty").bind("type");
 			binder.forMemberField(itemBarcode).withConverter(new StringToLongConverter(itemBarcode.getValue())).bind("barcode");
-			binder.forMemberField(isAvailable).bind("isAvailable");
-			binder.forMemberField(isLate).bind("isLate");
+			binder.forMemberField(isAvailable).asRequired().bind("isAvailable");
+			binder.forMemberField(isLate).asRequired().bind("isLate");
 		}
 		
 		private void delete() {
@@ -316,6 +366,7 @@ public class InventoryView extends HorizontalLayout implements View {
 				binder.setBean(item);
 			} catch(NullPointerException e) {} 
 		}
+	
 	}
 
 	private class BarcodeStream implements StreamSource {

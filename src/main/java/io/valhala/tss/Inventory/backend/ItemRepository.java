@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 
 public interface ItemRepository extends JpaRepository<InventoryItem, Long> {
 	ArrayList<InventoryItem> findAllByNameContainsIgnoreCase(String i_name);
-
+	InventoryItem findByBarcode(Long i_barcode);
 }
