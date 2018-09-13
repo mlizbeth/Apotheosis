@@ -3,6 +3,12 @@
 #To hopefully implement an easy to use, bug free
 #Method of tracking Who has What and When it's due.
 
+#This is not the installation file
+#Keep schema as 'update'?
+
+create schema inventory;
+use inventory;
+
 create table item (
   i_barcode bigint not null auto_increment primary key,
   i_name varchar(20) not null,

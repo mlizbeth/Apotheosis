@@ -1,12 +1,16 @@
 package io.valhala.tss.Inventory.view;
 
+import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -26,22 +30,23 @@ import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
-//import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.TextArea;
 import com.vaadin.ui.themes.ValoTheme;
+
 import io.valhala.tss.Inventory.backend.InventoryItem;
 import io.valhala.tss.Inventory.backend.ItemRepository;
 
-
-
+//https://vaadin.com/forum/thread/14338571
 //This class is nearly finished
 //Still need all field validation, some changes to the entity class
 //new entity classes: user (isAdmin?), patron
@@ -79,6 +84,7 @@ public class InventoryView extends HorizontalLayout implements View {
 		filterMode.setItems("Filter by Barcode", "Filter by Name", "Filter by Patron");
 		filterMode.setValue("Filter by Name");
 		filterMode.setEmptySelectionAllowed(false);
+		filterMode.setTextInputAllowed(false);
 		
 		filter = new TextField();
 		filter.setWidth("100%");
@@ -89,6 +95,7 @@ public class InventoryView extends HorizontalLayout implements View {
 		aOps.setItems("Catalog", "Check In", "Check Out", "Renew");
 		aOps.setValue("Catalog");
 		aOps.setEmptySelectionAllowed(false);
+		aOps.setTextInputAllowed(false);
 			
 		addItem = new Button("Add item");
 		toolBar = new HorizontalLayout(filterMode, filter, aOps, addItem);
@@ -113,7 +120,6 @@ public class InventoryView extends HorizontalLayout implements View {
 		iList.setColumns("name", "type", "barcode");
 		iList.setSizeFull();
 		iList.setSelectionMode(Grid.SelectionMode.SINGLE);
-
 		
 		addItem.addStyleName(ValoTheme.BUTTON_PRIMARY);
 
@@ -124,13 +130,15 @@ public class InventoryView extends HorizontalLayout implements View {
 	private void initListeners() {
 
 		aOps.addValueChangeListener(e -> {
-			//System.out.println("Test");
+			if(e.getValue().equals("Check Out")) {
+				CheckOutWindow w = new CheckOutWindow();
+				UI.getCurrent().addWindow(w);;
+			}
 		});
 		
 		filterMode.addValueChangeListener(e -> {
 			if(filterMode.getValue().equals("Filter by Barcode")) {
 				searchByName = false;
-				//System.out.println("searchByName: " + searchByName);
 			}
 			else {
 				searchByName = true;
@@ -160,18 +168,6 @@ public class InventoryView extends HorizontalLayout implements View {
 					editForm.setItem(e.getValue());
 				}
 			}
-			
-			if(aOps.getValue().equals("Check In")) {
-				
-			}
-			
-			if(aOps.getValue().equals("Check Out")) {
-				
-			}
-			
-			if(aOps.getValue().equals("Renew")) {
-				
-			}
 		});
 	}
 	//([0-9])+
@@ -183,8 +179,9 @@ public class InventoryView extends HorizontalLayout implements View {
 					filter.setComponentError(null);
 				}
 				//iList.setItems(repo.findAllByBarcodeContains(Long.valueOf(filter.getValue()))); // value [%VALUE%] does not match [java.lang.Long (n/a)]
-				iList.setItems(repo.findByBarcode(Long.valueOf(filter.getValue())));
-				
+				if(!(repo.findByBarcode(Long.valueOf(filter.getValue())) == null)) {
+					iList.setItems(repo.findByBarcode(Long.valueOf(filter.getValue())));
+				}				
 			}
 			else {
 				filter.setComponentError(new UserError("Entry must be numeric. Alternatively you can swap filter modes."));
@@ -200,24 +197,46 @@ public class InventoryView extends HorizontalLayout implements View {
 		iList.setItems(repo.findAll());
 	}
 	
-	private class renewPopup extends Window {
-		//Scan item
-		//show item details
-		//Scan MSR
-		//show patron details?
-		//Show when checked out and when due
-		//Apply new due date
-		//update DB
-	}
-	
-	private class checkOutPopup extends Window {
+	private class CheckOutWindow extends Window {
+		private VerticalLayout root = new VerticalLayout();
+		private Label info = new Label("Please Swipe the Patron's Tiger Card");
+		private TextField hacky = new TextField("");
+		private String id;
+		public CheckOutWindow() {
+			setContent(root);
+			root.setSizeUndefined();
+			this.setHeight("400px");
+			this.setWidth("400px");
+			this.setResizable(false);
+			this.setModal(true);
+			this.center();
+			root.addComponent(info);
+			root.addComponent(hacky);
+			hacky.setMaxLength(11);
+			addListener();
+			hacky.focus();
+		}
 		
+		private void addListener() {
+			hacky.addValueChangeListener(e -> {
+				if(hacky.getValue().matches("(;[0-9]+[?])") && hacky.getValue().length() == 11) {
+					id = hacky.getValue().substring(hacky.getValue().indexOf(";") + 1, hacky.getValue().indexOf("?") - 2);
+					hacky.setValue(id);
+					hacky.setEnabled(false);
+				}
+				//manual entry
+				else if(hacky.getValue().length() == 7) {
+					hacky.setEnabled(false);
+					id = hacky.getValue();
+					System.out.println(id);
+				}
+			});
+			
+			this.addCloseListener(e -> {
+				aOps.setValue("Catalog");
+			});
+		}
 	}
-	
-	private class checkInPopup extends Window {
-		
-	}
-	
 
 	private class editPanel extends FormLayout {
 		private InventoryItem item;
@@ -234,8 +253,7 @@ public class InventoryView extends HorizontalLayout implements View {
 		private void addListeners() {
 			
 			isAvailable.addValueChangeListener(e -> {
-				System.out.println("Test"); //still not editable with a listener
-				//and still not editable by explicitly calling setEnabled(true), setReadOnly(false);
+				
 			});
 			
 			notes.addValueChangeListener(e -> {

@@ -1,18 +1,18 @@
 package io.valhala.tss.Inventory.view;
 
-import com.vaadin.addon.charts.Chart;
-import com.vaadin.addon.charts.model.Background;
-import com.vaadin.addon.charts.model.ChartType;
-import com.vaadin.addon.charts.model.Configuration;
-import com.vaadin.addon.charts.model.DataLabels;
-import com.vaadin.addon.charts.model.Labels;
-import com.vaadin.addon.charts.model.ListSeries;
-import com.vaadin.addon.charts.model.Pane;
-import com.vaadin.addon.charts.model.PlotOptionsSolidgauge;
-import com.vaadin.addon.charts.model.SeriesTooltip;
-import com.vaadin.addon.charts.model.Stop;
-import com.vaadin.addon.charts.model.YAxis;
-import com.vaadin.addon.charts.model.style.SolidColor;
+//import com.vaadin.addon.charts.Chart;
+//import com.vaadin.addon.charts.model.Background;
+//import com.vaadin.addon.charts.model.ChartType;
+//import com.vaadin.addon.charts.model.Configuration;
+//import com.vaadin.addon.charts.model.DataLabels;
+//import com.vaadin.addon.charts.model.Labels;
+//import com.vaadin.addon.charts.model.ListSeries;
+//import com.vaadin.addon.charts.model.Pane;
+//import com.vaadin.addon.charts.model.PlotOptionsSolidgauge;
+//import com.vaadin.addon.charts.model.SeriesTooltip;
+//import com.vaadin.addon.charts.model.Stop;
+//import com.vaadin.addon.charts.model.YAxis;
+//import com.vaadin.addon.charts.model.style.SolidColor;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.server.Responsive;
@@ -48,7 +48,7 @@ public class DashboardView extends VerticalLayout implements View {
 		dPanels.addStyleName("dashboard-panels");
 		builderHeader();
 		addComponent(dPanels);
-		dPanels.addComponents(buildTimeClock());
+		//dPanels.addComponents(buildTimeClock());
 		
 		/*
 		 * I want these panels to take up 50% without the interior
@@ -59,70 +59,70 @@ public class DashboardView extends VerticalLayout implements View {
 		
 	}
 
-	private Component buildTimeClock() {
-		Chart chart = new Chart();
-		chart.setSizeFull();
-        //chart.setWidth(500, Unit.PIXELS);
-
-        final Configuration configuration = chart.getConfiguration();
-        configuration.getChart().setType(ChartType.SOLIDGAUGE);
-
-        configuration.getTitle().setText("Weekly Timesheet");
-
-        Pane pane = new Pane();
-        pane.setCenter("50%", "85%");
-        pane.setSize("140%");
-        pane.setStartAngle(-90);
-        pane.setEndAngle(90);
-        configuration.addPane(pane);
-
-        configuration.getTooltip().setEnabled(false);
-
-        Background bkg = new Background();
-        bkg.setBackgroundColor(new SolidColor("#eeeeee"));
-        bkg.setInnerRadius("60%");
-        bkg.setOuterRadius("100%");
-        bkg.setShape("arc");
-        bkg.setBorderWidth(0);
-        pane.setBackground(bkg);
-
-        YAxis yaxis = configuration.getyAxis();
-        yaxis.setLineWidth(0);
-        yaxis.setTickInterval(5);
-        yaxis.setTickWidth(0);
-        yaxis.setMin(0);
-        yaxis.setMax(60);
-        yaxis.setTitle("");
-        yaxis.getTitle().setY(-70);
-        yaxis.setLabels(new Labels());
-        yaxis.getLabels().setY(16);
-        Stop stop1 = new Stop(0.1f, SolidColor.GREEN);
-        Stop stop2 = new Stop(0.5f, SolidColor.YELLOW);
-        Stop stop3 = new Stop(0.9f, SolidColor.RED);
-        yaxis.setStops(stop1, stop2, stop3);
-
-        PlotOptionsSolidgauge plotOptions = new PlotOptionsSolidgauge();
-        plotOptions.setTooltip(new SeriesTooltip());
-        plotOptions.getTooltip().setValueSuffix(" hours");
-        DataLabels labels = new DataLabels();
-        labels.setY(5);
-        labels.setBorderWidth(0);
-        labels.setUseHTML(true);
-        labels.setFormat("<div style=\"text-align:center\"><span style=\"font-size:25px;\">{y}</span><br/>"
-                + "                       <span style=\"font-size:12pxg\">hours</span></div>");
-        plotOptions.setDataLabels(labels);
-        configuration.setPlotOptions(plotOptions);
-
-        final ListSeries series = new ListSeries("Weekly Timesheet", 15.34);
-        configuration.setSeries(series);
-        
-        chart.drawChart(configuration);
-        chart.setResponsive(true);
-        Component panel = createWrapper(chart);
-        return panel;
-		
-		
-	}
+//	private Component buildTimeClock() {
+//		Chart chart = new Chart();
+//		chart.setSizeFull();
+//        //chart.setWidth(500, Unit.PIXELS);
+//
+//        final Configuration configuration = chart.getConfiguration();
+//        configuration.getChart().setType(ChartType.SOLIDGAUGE);
+//
+//        configuration.getTitle().setText("Weekly Timesheet");
+//
+//        Pane pane = new Pane();
+//        pane.setCenter("50%", "85%");
+//        pane.setSize("140%");
+//        pane.setStartAngle(-90);
+//        pane.setEndAngle(90);
+//        configuration.addPane(pane);
+//
+//        configuration.getTooltip().setEnabled(false);
+//
+//        Background bkg = new Background();
+//        bkg.setBackgroundColor(new SolidColor("#eeeeee"));
+//        bkg.setInnerRadius("60%");
+//        bkg.setOuterRadius("100%");
+//        bkg.setShape("arc");
+//        bkg.setBorderWidth(0);
+//        pane.setBackground(bkg);
+//
+//        YAxis yaxis = configuration.getyAxis();
+//        yaxis.setLineWidth(0);
+//        yaxis.setTickInterval(5);
+//        yaxis.setTickWidth(0);
+//        yaxis.setMin(0);
+//        yaxis.setMax(60);
+//        yaxis.setTitle("");
+//        yaxis.getTitle().setY(-70);
+//        yaxis.setLabels(new Labels());
+//        yaxis.getLabels().setY(16);
+//        Stop stop1 = new Stop(0.1f, SolidColor.GREEN);
+//        Stop stop2 = new Stop(0.5f, SolidColor.YELLOW);
+//        Stop stop3 = new Stop(0.9f, SolidColor.RED);
+//        yaxis.setStops(stop1, stop2, stop3);
+//
+//        PlotOptionsSolidgauge plotOptions = new PlotOptionsSolidgauge();
+//        plotOptions.setTooltip(new SeriesTooltip());
+//        plotOptions.getTooltip().setValueSuffix(" hours");
+//        DataLabels labels = new DataLabels();
+//        labels.setY(5);
+//        labels.setBorderWidth(0);
+//        labels.setUseHTML(true);
+//        labels.setFormat("<div style=\"text-align:center\"><span style=\"font-size:25px;\">{y}</span><br/>"
+//                + "                       <span style=\"font-size:12pxg\">hours</span></div>");
+//        plotOptions.setDataLabels(labels);
+//        configuration.setPlotOptions(plotOptions);
+//
+//        final ListSeries series = new ListSeries("Weekly Timesheet", 15.34);
+//        configuration.setSeries(series);
+//        
+//        chart.drawChart(configuration);
+//        chart.setResponsive(true);
+//        Component panel = createWrapper(chart);
+//        return panel;
+//		
+//		
+//	}
 
 	private Component buildSAAG() {
 		TextArea notes = new TextArea("ATT");

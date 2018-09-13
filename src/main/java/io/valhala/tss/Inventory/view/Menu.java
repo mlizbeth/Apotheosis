@@ -39,11 +39,11 @@ public class Menu extends CssLayout
 		
 		addComponent(menuPart);
 		
-		createNavigationButton("Home", DashboardView.VIEW_NAME, VaadinIcons.HOME);
+		//createNavigationButton("Home", DashboardView.VIEW_NAME, VaadinIcons.HOME);
 		createNavigationButton("Inventory", InventoryView.VIEW_NAME, VaadinIcons.PACKAGE);
 		createNavigationButton("Schedule", ScheduleView.VIEW_NAME, VaadinIcons.CALENDAR_O);
-		createNavigationButton("Resources", ResourceView.VIEW_NAME, VaadinIcons.NOTEBOOK);
-		createNavigationButton("Pickup/Drop Shifts", "#", VaadinIcons.ANCHOR);
+		//createNavigationButton("Resources", ResourceView.VIEW_NAME, VaadinIcons.NOTEBOOK);
+		//createNavigationButton("Pickup/Drop Shifts", "#", VaadinIcons.ANCHOR);
 		
 	}
 	
