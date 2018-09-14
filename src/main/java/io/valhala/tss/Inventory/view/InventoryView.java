@@ -5,6 +5,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -28,6 +31,7 @@ import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.server.UserError;
 import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.DateField;
@@ -45,6 +49,8 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import io.valhala.tss.Inventory.backend.InventoryItem;
 import io.valhala.tss.Inventory.backend.ItemRepository;
+import io.valhala.tss.Inventory.backend.Patron;
+import io.valhala.tss.Inventory.backend.PatronRepository;
 
 //https://vaadin.com/forum/thread/14338571
 //This class is nearly finished
@@ -59,6 +65,8 @@ import io.valhala.tss.Inventory.backend.ItemRepository;
 public class InventoryView extends HorizontalLayout implements View {
 	@Autowired
 	ItemRepository repo;
+	@Autowired
+	PatronRepository pr;
 	//filter should request focus when a barcode is scanned.... or capture the scan code and then apply the search
 	public static final String VIEW_NAME = "Inventory";
 	private TextField filter;
@@ -143,6 +151,9 @@ public class InventoryView extends HorizontalLayout implements View {
 			else {
 				searchByName = true;
 			}
+			if(filterMode.getValue().equals("Filter by Patron")) {
+				
+			}
 		});
 		
 		filter.addValueChangeListener(e -> {
@@ -201,35 +212,132 @@ public class InventoryView extends HorizontalLayout implements View {
 		private VerticalLayout root = new VerticalLayout();
 		private Label info = new Label("Please Swipe the Patron's Tiger Card");
 		private TextField hacky = new TextField("");
+		private TextField iField = new TextField("");
 		private String id;
+		private Button submit = new Button("Submit");
+		private DateField due = new DateField();
+		private boolean validID;
+		
 		public CheckOutWindow() {
 			setContent(root);
-			root.setSizeUndefined();
-			this.setHeight("400px");
-			this.setWidth("400px");
+			this.setHeight("300px");
+			this.setWidth("350px");
 			this.setResizable(false);
 			this.setModal(true);
 			this.center();
+			hacky.setPlaceholder("Patron ID");
+			iField.setPlaceholder("Item Barcode");
 			root.addComponent(info);
+			info.setSizeUndefined();
+			root.setComponentAlignment(info, Alignment.TOP_CENTER);
 			root.addComponent(hacky);
+			hacky.setSizeUndefined();
+			root.setComponentAlignment(hacky, Alignment.MIDDLE_CENTER);
+			root.addComponent(iField);
+			iField.setSizeUndefined();
+			root.setComponentAlignment(iField, Alignment.MIDDLE_CENTER);
+			root.addComponent(due);
+			due.setSizeUndefined();
+			root.setComponentAlignment(due, Alignment.BOTTOM_CENTER);
+			root.addComponent(submit);
+			root.setComponentAlignment(submit, Alignment.BOTTOM_CENTER);
+			submit.setStyleName(ValoTheme.BUTTON_PRIMARY);
 			hacky.setMaxLength(11);
 			addListener();
+			iField.setEnabled(false);
+			due.setEnabled(false);
+			submit.setEnabled(false);
 			hacky.focus();
+		}
+		
+		private void verifyDates() {
+			
+			/*
+			 * Some very hack-y logic to confirm the item's due date is being set for a date in the future.
+			 */
+			
+			final String delimiter = "-";
+			int[] cNum, dNum;
+			LocalDate now = LocalDate.now();
+			LocalDate dueDate = due.getValue();
+			cNum = new int[3];
+			cNum[0] = Integer.parseInt(now.toString().substring(0, now.toString().indexOf(delimiter)));
+			cNum[1] = Integer.parseInt(now.toString().substring(now.toString().indexOf("-") + 1, now.toString().lastIndexOf("-")));
+			cNum[2] = Integer.parseInt(now.toString().substring(now.toString().lastIndexOf("-") + 1));
+
+			dNum = new int[3];
+			dNum[0] = Integer.parseInt(dueDate.toString().substring(0, dueDate.toString().indexOf(delimiter)));
+			dNum[1] = Integer.parseInt(dueDate.toString().substring(dueDate.toString().indexOf("-") + 1, dueDate.toString().lastIndexOf("-")));
+			dNum[2] = Integer.parseInt(dueDate.toString().substring(dueDate.toString().lastIndexOf("-") + 1));
+
+			
+			if(dNum[0] >= cNum[0]) {
+				if(dNum[1] >= cNum[1]) {
+					if(dNum[2] > cNum[2]) {
+						submit.setEnabled(true);
+					}
+					else { submit.setEnabled(false); }
+				}
+			}
 		}
 		
 		private void addListener() {
 			hacky.addValueChangeListener(e -> {
+				
 				if(hacky.getValue().matches("(;[0-9]+[?])") && hacky.getValue().length() == 11) {
 					id = hacky.getValue().substring(hacky.getValue().indexOf(";") + 1, hacky.getValue().indexOf("?") - 2);
-					hacky.setValue(id);
-					hacky.setEnabled(false);
+					validID = true;
 				}
-				//manual entry
 				else if(hacky.getValue().length() == 7) {
-					hacky.setEnabled(false);
 					id = hacky.getValue();
-					System.out.println(id);
+					validID = true;
 				}
+				if(validID) {
+					if(pr.findByid(Long.parseLong(id)) != null) {
+						hacky.setValue(id);
+						hacky.setEnabled(false);
+						iField.setEnabled(true);
+						iField.focus();
+						info.setValue("Please scan barcode");
+					}
+					else {
+						//create a new patron record
+					}
+				}
+				else {
+					//invalid format exception
+				}
+			});
+			
+			iField.addValueChangeListener(e -> {
+				//Check barcode against DB to make sure it is valid and can be checked out
+				InventoryItem temp;
+				if(!(iField.getValue().equals(""))) {
+					if(repo.findByBarcode(Long.parseLong(iField.getValue())) != null) {
+						temp = repo.findByBarcode(Long.parseLong(iField.getValue()));
+						if(temp.getisAvailable().equals("False")) {
+							System.out.println("Checked out");
+						}
+						else { due.setEnabled(true); }
+					}
+				}
+			});
+			
+			due.addValueChangeListener(e -> {
+				verifyDates();
+			});
+			
+			//YYYY-MM-DD
+			submit.addClickListener(e -> {
+				
+				Date temp = new Date();
+				//commit the changes
+				InventoryItem t = repo.findByBarcode(Long.parseLong(iField.getValue())); 
+				t.setisAvailable("False");
+				t.setCheckOutDate(temp);
+				t.setDueDate(Date.from(due.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+				repo.save(t);
+				Page.getCurrent().reload();
 			});
 			
 			this.addCloseListener(e -> {
