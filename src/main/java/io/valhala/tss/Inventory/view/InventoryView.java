@@ -142,6 +142,10 @@ public class InventoryView extends HorizontalLayout implements View {
 				CheckOutWindow w = new CheckOutWindow();
 				UI.getCurrent().addWindow(w);;
 			}
+			if(e.getValue().equals("Check In")) {
+				CheckInWindow w = new CheckInWindow();
+				UI.getCurrent().addWindow(w);
+			}
 		});
 		
 		filterMode.addValueChangeListener(e -> {
@@ -206,6 +210,52 @@ public class InventoryView extends HorizontalLayout implements View {
 	@PostConstruct
 	void init() {
 		iList.setItems(repo.findAll());
+	}
+	
+	private class CheckInWindow extends Window {
+		/*
+		 * Scan item, mark item as available, clear due date and checkout dates
+		 */
+		
+		private VerticalLayout root = new VerticalLayout();
+		private Label info = new Label("Please scan the item barcode");
+		private TextField iField = new TextField("");
+		
+		public CheckInWindow() {
+			setContent(root);
+			this.setHeight("300px");
+			this.setWidth("350px");
+			this.setResizable(false);
+			this.setModal(true);
+			this.center();
+			iField.setPlaceholder("Item Barcode");
+			root.addComponent(info);
+			info.setSizeUndefined();
+			root.setComponentAlignment(info, Alignment.TOP_CENTER);
+			root.addComponent(iField);
+			iField.setSizeUndefined();
+			root.setComponentAlignment(iField, Alignment.MIDDLE_CENTER);
+			iField.focus();
+			addListener();
+		}
+		
+		private void addListener() {
+			iField.addValueChangeListener(e -> {
+				if(iField.getValue() != "") {
+					if(repo.existsById(Long.parseLong(iField.getValue()))) {
+						InventoryItem temp = repo.findByBarcode(Long.parseLong(iField.getValue()));
+						temp.setisAvailable("True");
+						temp.setCheckOutDate(null);
+						temp.setDueDate(null);
+						repo.save(temp);
+						Page.getCurrent().reload();
+						/*
+						 * If Due date is past the current checkin date mark item as overdue
+						 */
+					}
+				}
+			});
+		}
 	}
 	
 	private class CheckOutWindow extends Window {
@@ -302,6 +352,11 @@ public class InventoryView extends HorizontalLayout implements View {
 					}
 					else {
 						//create a new patron record
+						CheckOutWindow w = new CheckOutWindow();
+						UI.getCurrent().addWindow(w);
+						
+						
+						hacky.setEnabled(false);
 					}
 				}
 				else {
@@ -310,6 +365,7 @@ public class InventoryView extends HorizontalLayout implements View {
 			});
 			
 			iField.addValueChangeListener(e -> {
+				info.setValue("Please select a due date");
 				//Check barcode against DB to make sure it is valid and can be checked out
 				InventoryItem temp;
 				if(!(iField.getValue().equals(""))) {
@@ -318,7 +374,10 @@ public class InventoryView extends HorizontalLayout implements View {
 						if(temp.getisAvailable().equals("False")) {
 							System.out.println("Checked out");
 						}
-						else { due.setEnabled(true); }
+						else { 
+							due.setEnabled(true);
+							iField.setReadOnly(true);
+						}
 					}
 				}
 			});
@@ -434,16 +493,16 @@ public class InventoryView extends HorizontalLayout implements View {
 			itemType.setMaxLength(64);
 			isAvailable = new ComboBox<String>("Availability");
 			isAvailable.setItems("True", "False"); //should be managed by sys too
-			isAvailable.setEmptySelectionAllowed(false);
-			isAvailable.setTextInputAllowed(false);
+			isAvailable.setReadOnly(true);
 			isLate = new ComboBox<String>("Overdue");
 			isLate.setItems("True", "False");
 			isLate.setDescription("Value is managed by the system");
 			isLate.setIcon(VaadinIcons.QUESTION_CIRCLE_O);
-			isLate.setEmptySelectionAllowed(false);
-			isLate.setTextInputAllowed(false);
+			isLate.setReadOnly(true);
 			checkOutDate = new DateField("Checkout Date");
+			checkOutDate.setReadOnly(true);
 			dueDate = new DateField("Date Due");
+			dueDate.setReadOnly(true);
 			notes = new TextArea("Notes");
 
 			cancel.addClickListener(e -> this.cancel());
