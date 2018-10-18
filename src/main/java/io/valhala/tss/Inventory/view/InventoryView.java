@@ -63,6 +63,10 @@ import io.valhala.tss.Inventory.backend.PatronRepository;
 @SpringView(name = InventoryView.VIEW_NAME)
 @SpringComponent
 public class InventoryView extends HorizontalLayout implements View {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7607698814348085434L;
 	@Autowired
 	ItemRepository repo;
 	@Autowired
@@ -217,6 +221,10 @@ public class InventoryView extends HorizontalLayout implements View {
 		 * Scan item, mark item as available, clear due date and checkout dates
 		 */
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 6175316451169030895L;
 		private VerticalLayout root = new VerticalLayout();
 		private Label info = new Label("Please scan the item barcode");
 		private TextField iField = new TextField("");
@@ -258,7 +266,63 @@ public class InventoryView extends HorizontalLayout implements View {
 		}
 	}
 	
+	private class NewPatronWindow extends Window {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -9130796652422301265L;
+		private TextField idField, nameField, emailField, classField;
+		private Button submit = new Button("Submit");
+		private Label info = new Label("New Patron Record");
+		private VerticalLayout root = new VerticalLayout();
+		
+		public NewPatronWindow(String patronId) {
+			System.out.println(patronId);
+			setContent(root);
+			this.setHeight("300px");
+			this.setWidth("350px");
+			this.setResizable(false);
+			this.setModal(true);
+			this.center();
+			info.setSizeUndefined();
+			root.addComponent(info);
+			root.setComponentAlignment(info, Alignment.TOP_CENTER);
+			idField = new TextField();
+			idField.setValue(patronId);
+			idField.setEnabled(false);
+			root.addComponent(idField);
+			root.setComponentAlignment(idField, Alignment.MIDDLE_CENTER);
+			nameField = new TextField();
+			nameField.setPlaceholder("Name");
+			root.addComponent(nameField);
+			root.setComponentAlignment(nameField, Alignment.MIDDLE_CENTER);
+			emailField = new TextField();
+			emailField.setPlaceholder("Email Address");
+			root.addComponent(emailField);
+			root.setComponentAlignment(emailField, Alignment.MIDDLE_CENTER);
+			classField = new TextField();
+			classField.setPlaceholder("Classifcation"); //combobox?
+			root.addComponent(classField);
+			root.setComponentAlignment(classField, Alignment.MIDDLE_CENTER);
+			root.addComponent(submit);
+			root.setComponentAlignment(submit, Alignment.MIDDLE_CENTER);
+			addListener();
+		}
+		
+		private void addListener() {
+			submit.addClickListener(e -> {
+				Patron temp = new Patron(Long.parseLong(idField.getValue()), nameField.getValue(), emailField.getValue(),classField.getValue());
+				pr.save(temp);
+				this.close();
+			});
+		}
+	}
+	
 	private class CheckOutWindow extends Window {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -8597921460191289609L;
 		private VerticalLayout root = new VerticalLayout();
 		private Label info = new Label("Please Swipe the Patron's Tiger Card");
 		private TextField hacky = new TextField("");
@@ -352,11 +416,12 @@ public class InventoryView extends HorizontalLayout implements View {
 					}
 					else {
 						//create a new patron record
-						CheckOutWindow w = new CheckOutWindow();
+						NewPatronWindow w = new NewPatronWindow(id);
 						UI.getCurrent().addWindow(w);
-						
-						
 						hacky.setEnabled(false);
+						w.addCloseListener(event -> {
+							iField.setEnabled(true);
+						});
 					}
 				}
 				else {
@@ -390,10 +455,13 @@ public class InventoryView extends HorizontalLayout implements View {
 			submit.addClickListener(e -> {
 				
 				Date temp = new Date();
+				Patron p = new Patron();
+				p = pr.findByid(Long.parseLong(id));
 				//commit the changes
 				InventoryItem t = repo.findByBarcode(Long.parseLong(iField.getValue())); 
 				t.setisAvailable("False");
 				t.setCheckOutDate(temp);
+				t.setcurrentPatron(p.getId());
 				t.setDueDate(Date.from(due.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
 				repo.save(t);
 				Page.getCurrent().reload();
@@ -406,8 +474,12 @@ public class InventoryView extends HorizontalLayout implements View {
 	}
 
 	private class editPanel extends FormLayout {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3974948106917619006L;
 		private InventoryItem item;
-		private TextField itemName, itemType, itemBarcode;
+		private TextField itemName, itemType, itemBarcode, currentP;
 		private DateField checkOutDate, dueDate;
 		private Button save, delete, cancel;
 		private ComboBox<String> isAvailable, isLate;
@@ -474,7 +546,7 @@ public class InventoryView extends HorizontalLayout implements View {
 		private void initEditLayout() {
 			HorizontalLayout options = new HorizontalLayout(save, delete, cancel);
 			options.setSpacing(true);
-			addComponents(itemBarcode, itemName, itemType, isAvailable, isLate, checkOutDate, dueDate, notes, genLayout, options);
+			addComponents(itemBarcode, itemName, itemType, isAvailable, isLate, checkOutDate, dueDate, notes, currentP, genLayout, options);
 		}
 
 		private void initEditConf() {
@@ -504,6 +576,7 @@ public class InventoryView extends HorizontalLayout implements View {
 			dueDate = new DateField("Date Due");
 			dueDate.setReadOnly(true);
 			notes = new TextArea("Notes");
+			currentP = new TextField("Checked out to");
 
 			cancel.addClickListener(e -> this.cancel());
 			save.addClickListener(e -> this.save());
@@ -517,6 +590,7 @@ public class InventoryView extends HorizontalLayout implements View {
 			binder.forMemberField(itemBarcode).withConverter(new StringToLongConverter(itemBarcode.getValue())).bind("barcode");
 			binder.forMemberField(isAvailable).asRequired().bind("isAvailable");
 			binder.forMemberField(isLate).asRequired().bind("isLate");
+			binder.forMemberField(currentP).withConverter(new StringToLongConverter(currentP.getValue())).bind("currentPatron");
 		}
 		
 		private void delete() {
@@ -555,6 +629,10 @@ public class InventoryView extends HorizontalLayout implements View {
 	}
 
 	private class BarcodeStream implements StreamSource {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6066440273668672243L;
 		private QRCodeWriter qrw;
 		private BitMatrix bm;
 		private ByteArrayOutputStream imagebuffer = new ByteArrayOutputStream();

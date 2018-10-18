@@ -30,6 +30,8 @@ public class InventoryItem implements Serializable, Cloneable {
 	@Nullable
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date checkOutDate, dueDate;
+	@Nullable
+	private Long currentPatron;
 	
 	public InventoryItem() {}
 
@@ -48,7 +50,7 @@ public class InventoryItem implements Serializable, Cloneable {
 		this.isAvailable = isAvailable;
 	}
 	
-	public InventoryItem(Long barcode, String name, String type, String notes, String isAvailable, Date checkOutDate, Date dueDate, String isLate) {
+	public InventoryItem(Long barcode, String name, String type, String notes, String isAvailable, Date checkOutDate, Date dueDate, String isLate, Long currentPatron) {
 		this.name = name;
 		this.type = type;
 		this.notes = notes;
@@ -56,7 +58,7 @@ public class InventoryItem implements Serializable, Cloneable {
 		this.checkOutDate = checkOutDate;
 		this.dueDate = dueDate;
 		this.isLate = isLate;
-		//this.currentPatron = currentPatron;
+		this.currentPatron = currentPatron;
 	}
 	
 	@Column(name="barcode")
@@ -66,6 +68,11 @@ public class InventoryItem implements Serializable, Cloneable {
 	
 	@Column(name="name")
 	public String getName() {return name;}
+	
+	@Column(name="checked_out_to")
+	public Long getcurrentPatron() {return currentPatron;}
+	
+	public void setcurrentPatron(Long currentPatron) {this.currentPatron = currentPatron;}
 	
 	public void setName(String name) {this.name = name;}
 	
