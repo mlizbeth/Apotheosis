@@ -27,9 +27,15 @@ Quickly see a list of all of the items in the database, sorted by: Name, Type, B
 
 ## TODO
 Themeing
+
 Patron Catalogging
+
 Scheduling System for employees/supervisors
+
 Time tracking system
+
 Create a record that keeps a list of every item a patron has ever checked out (purge after 6months if the item has been returned)
+
 Create a record that keeps a list of every patron an item has been checked out to (purge after 6months if the item has been returned)
+
 Query the database to run and generate reports that can be exported to a spreadsheet, csv, google drive, etc.
